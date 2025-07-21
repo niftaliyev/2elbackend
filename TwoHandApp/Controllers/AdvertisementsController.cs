@@ -3,7 +3,7 @@ using TwoHandApp.Models;
 using System.IO;
 
 namespace TwoHandApp.Controllers;
-
+//test
 [ApiController]
 [Route("api/[controller]")]
 public class AdvertisementsController : ControllerBase
