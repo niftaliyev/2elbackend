@@ -1,9 +1,9 @@
-name: Deploy .NET Web API
+name: Deploy .NET Web API to VPS
 
 on:
   push:
     branches:
-      - main  # или твоя основная ветка
+      - main
 
 jobs:
   deploy:
@@ -13,36 +13,34 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.x'
 
     - name: Restore dependencies
-      run: dotnet restore ./MyApp.sln
+      run: dotnet restore ./TwoHandApp/TwoHandApp.csproj
 
-    - name: Build
-      run: dotnet build ./MyApp.sln --configuration Release --no-restore
+    - name: Build app
+      run: dotnet build ./TwoHandApp/TwoHandApp.csproj --configuration Release
 
-    - name: Publish
-      run: dotnet publish ./MyApp/MyApp.csproj -c Release -o ./publish --no-build
+    - name: Publish app
+      run: dotnet publish ./TwoHandApp/TwoHandApp.csproj -c Release -o ./publish
 
-    - name: Deploy to server
-      uses: appleboy/scp-action@v0.1.4
+    - name: Deploy via SSH
+      uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
-        source: "./publish/"
-        target: "/var/www/myapp/"
+        source: ./publish/
+        target: /home/${{ secrets.SERVER_USER }}/twohandapp
 
-    - name: Run migrations and restart service
-      uses: appleboy/ssh-action@v0.1.10
+    - name: Restart app on server
+      uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
-          cd /var/www/myapp
-          dotnet MyApp.dll database update
-          sudo systemctl restart myapp.service
+          sudo systemctl restart twohandapp.service
