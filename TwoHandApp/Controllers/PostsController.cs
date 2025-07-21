@@ -17,6 +17,11 @@ public class PostsController : ControllerBase
     {
         _context = context;
     }
+    [HttpGet]
+    public ActionResult<string> Test()
+    {
+        return Ok("Hiii");
+    }
 
     [HttpPost("with-files")]
     [Consumes("multipart/form-data")]
