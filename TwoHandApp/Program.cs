@@ -27,11 +27,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(); // http://localhost:5000/swagger
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 using (var scope = app.Services.CreateScope())
 {
