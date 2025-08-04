@@ -9,6 +9,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     public DbSet<RolePermission> RolePermissions { get; set; }
+    public ICollection<ApplicationUserRole> UserRoles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -25,6 +26,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<Advertisement> Advertisements { get; set; }
     public DbSet<Post> Posts { get; set; }
     public DbSet<PostPhoto> PostPhotos { get; set; }
+
 }
 
 public class Advertisement

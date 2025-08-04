@@ -102,7 +102,12 @@ namespace TwoHandApp.Migrations
                     b.Property<string>("RoleId")
                         .HasColumnType("text");
 
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("text");
+
                     b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("RoleId");
 
@@ -447,6 +452,9 @@ namespace TwoHandApp.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("text");
+
                     b.Property<string>("Permission")
                         .IsRequired()
                         .HasColumnType("text");
@@ -456,6 +464,8 @@ namespace TwoHandApp.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("RoleId");
 
@@ -491,6 +501,10 @@ namespace TwoHandApp.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
+                    b.HasOne("TwoHandApp.Models.ApplicationUser", null)
+                        .WithMany("UserRoles")
+                        .HasForeignKey("ApplicationUserId");
+
                     b.HasOne("TwoHandApp.Models.ApplicationRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
@@ -548,6 +562,10 @@ namespace TwoHandApp.Migrations
 
             modelBuilder.Entity("TwoHandApp.Models.RolePermission", b =>
                 {
+                    b.HasOne("TwoHandApp.Models.ApplicationUser", null)
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("ApplicationUserId");
+
                     b.HasOne("TwoHandApp.Models.ApplicationRole", "Role")
                         .WithMany("Permissions")
                         .HasForeignKey("RoleId")
@@ -570,6 +588,10 @@ namespace TwoHandApp.Migrations
             modelBuilder.Entity("TwoHandApp.Models.ApplicationUser", b =>
                 {
                     b.Navigation("Ads");
+
+                    b.Navigation("RolePermissions");
+
+                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

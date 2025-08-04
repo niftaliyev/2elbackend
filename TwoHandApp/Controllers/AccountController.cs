@@ -6,7 +6,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using TwoHandApp.Enums;
 using TwoHandApp.Models;
 using TwoHandApp.Regexs;
 
@@ -41,8 +40,13 @@ public class AccountController : ControllerBase
 
         var user = new ApplicationUser
         {
+            FullName = model.FullName,
             UserName = model.Email,
-            Email = model.Email
+            Email = model.Email,
+            PhoneNumber = model.PhoneNumber,
+            EmailConfirmed = true, // Устанавливаем EmailConfirmed в true для упрощения
+            PhoneNumberConfirmed = true, // Устанавливаем PhoneNumberConfirmed в true для упрощения
+            UserType = model.UserType,
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
@@ -105,6 +109,8 @@ public class AccountController : ControllerBase
         return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
     }
 
+
+
     //[Authorize(Roles = "Admin")]
     //[HttpPost("users/{userId}/assign-role")]
     //public async Task<IActionResult> AssignRole(string userId, [FromBody] string roleName)
@@ -142,67 +148,67 @@ public class AccountController : ControllerBase
     //    return Ok($"Permission {permission} добавлен роли {roleName}");
     //}
 
-    [Authorize(Roles = "Admin")]
-    [HttpGet("permissions")]
-    public IActionResult GetPermissions()
-    {
-        var permissions = Enum.GetValues(typeof(Permission))
-            .Cast<Permission>()
-            .Select(p => p.ToString())
-            .ToList();
+    //[Authorize(Roles = "Admin")]
+    //[HttpGet("permissions")]
+    //public IActionResult GetPermissions()
+    //{
+    //    var permissions = Enum.GetValues(typeof(Permission))
+    //        .Cast<Permission>()
+    //        .Select(p => p.ToString())
+    //        .ToList();
 
-        return Ok(permissions);
-    }
-    [Authorize(Roles = "Admin")]
-    [HttpGet("roles")]
-    public async Task<IActionResult> GetRoles()
-    {
-        var roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
-        return Ok(roles);
-    }
+    //    return Ok(permissions);
+    //}
+    //[Authorize(Roles = "Admin")]
+    //[HttpGet("roles")]
+    //public async Task<IActionResult> GetRoles()
+    //{
+    //    var roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
+    //    return Ok(roles);
+    //}
 
-    [Authorize(Roles = "Admin")]
-    [HttpPost("users/{userId}/assign-role")]
-    public async Task<IActionResult> AssignRole(Guid userId, [FromBody] AssignRoleRequest request)
-    {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+    //[Authorize(Roles = "Admin")]
+    //[HttpPost("users/{userId}/assign-role")]
+    //public async Task<IActionResult> AssignRole(Guid userId, [FromBody] AssignRoleRequest request)
+    //{
+    //    var user = await _userManager.FindByIdAsync(userId.ToString());
 
-        if (user == null)
-            throw new Exception("Пользователь не найден");
+    //    if (user == null)
+    //        throw new Exception("Пользователь не найден");
 
-        var roleExists = await _roleManager.RoleExistsAsync(request.RoleName);
-        if (!roleExists)
-            throw new Exception("Роль не существует");
+    //    var roleExists = await _roleManager.RoleExistsAsync(request.RoleName);
+    //    if (!roleExists)
+    //        throw new Exception("Роль не существует");
 
-        var roles = await _userManager.GetRolesAsync(user);
-        await _userManager.RemoveFromRolesAsync(user, roles); // очищаем
-        await _userManager.AddToRoleAsync(user, request.RoleName);    // назначаем новую        return Ok("Роль успешно назначена");
-        return Ok("Роль успешно назначена");
+    //    var roles = await _userManager.GetRolesAsync(user);
+    //    await _userManager.RemoveFromRolesAsync(user, roles); // очищаем
+    //    await _userManager.AddToRoleAsync(user, request.RoleName);    // назначаем новую        return Ok("Роль успешно назначена");
+    //    return Ok("Роль успешно назначена");
 
-    }
-    [Authorize(Roles = "Admin")]
-    [HttpPost]
-    public async Task<IActionResult> CreateRole([FromBody] AssignRoleRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.RoleName))
-            return BadRequest("Имя роли не может быть пустым");
+    //}
+    //[Authorize(Roles = "Admin")]
+    //[HttpPost]
+    //public async Task<IActionResult> CreateRole([FromBody] AssignRoleRequest request)
+    //{
+    //    if (string.IsNullOrWhiteSpace(request.RoleName))
+    //        return BadRequest("Имя роли не может быть пустым");
 
-        var existingRole = await _roleManager.FindByNameAsync(request.RoleName);
-        if (existingRole != null)
-            return Conflict("Такая роль уже существует");
+    //    var existingRole = await _roleManager.FindByNameAsync(request.RoleName);
+    //    if (existingRole != null)
+    //        return Conflict("Такая роль уже существует");
 
-        var newRole = new ApplicationRole
-        {
-            Name = request.RoleName
-        };
+    //    var newRole = new ApplicationRole
+    //    {
+    //        Name = request.RoleName
+    //    };
 
-        var result = await _roleManager.CreateAsync(newRole);
+    //    var result = await _roleManager.CreateAsync(newRole);
 
-        if (!result.Succeeded)
-            return StatusCode(500, result.Errors);
+    //    if (!result.Succeeded)
+    //        return StatusCode(500, result.Errors);
 
-        return Ok($"Роль '{request.RoleName}' успешно создана");
-    }
+    //    return Ok($"Роль '{request.RoleName}' успешно создана");
+    //}
 
     [Authorize(Roles = "Admin")]
     [HttpGet("admin-only")]
