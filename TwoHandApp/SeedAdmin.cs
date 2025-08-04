@@ -18,9 +18,11 @@ public static class SeedAdmin
         string adminEmail = "admin";
         string adminPassword = "Admin@123";
 
-        if (!await roleManager.RoleExistsAsync(adminRole.Name))
+        string adminRoleName = "Admin";
+
+        if (!await roleManager.RoleExistsAsync(adminRoleName))
         {
-            var role = new ApplicationRole { Name = adminRole.Name };
+            var role = new ApplicationRole { Name = adminRoleName };
             await roleManager.CreateAsync(role);
 
             foreach (Permission perm in Enum.GetValues<Permission>())
@@ -40,7 +42,7 @@ public static class SeedAdmin
         {
             user = new ApplicationUser { UserName = "admin", Email = adminEmail, EmailConfirmed = true };
             await userManager.CreateAsync(user, adminPassword);
-            await userManager.AddToRoleAsync(user, adminRole.Name);
+            await userManager.AddToRoleAsync(user, adminRoleName);
         }
 
         // Добавить в базу permissions из enum если их нет

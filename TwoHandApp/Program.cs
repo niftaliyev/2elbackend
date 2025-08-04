@@ -95,7 +95,6 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-await SeedAdmin.SeedAdminAsync(app.Services);
 
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -104,6 +103,9 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
+
+    await SeedAdmin.SeedAdminAsync(app.Services);
+
 }
 
 // Configure the HTTP request pipeline.
