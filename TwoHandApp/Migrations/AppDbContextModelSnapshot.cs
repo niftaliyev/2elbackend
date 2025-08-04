@@ -170,6 +170,92 @@ namespace TwoHandApp.Migrations
                     b.ToTable("Advertisements");
                 });
 
+            modelBuilder.Entity("TwoHandApp.Models.Ad", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("HasDelivery")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsNew")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPremium")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsStoreAd")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsVip")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("ProductType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserId1")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ViewCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId1");
+
+                    b.ToTable("Ad");
+                });
+
+            modelBuilder.Entity("TwoHandApp.Models.AdPhoto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AdId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsMain")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdId");
+
+                    b.ToTable("AdPhoto");
+                });
+
             modelBuilder.Entity("TwoHandApp.Models.ApplicationRole", b =>
                 {
                     b.Property<string>("Id")
@@ -215,6 +301,9 @@ namespace TwoHandApp.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("FullName")
+                        .HasColumnType("text");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
 
@@ -247,6 +336,9 @@ namespace TwoHandApp.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
+
+                    b.Property<string>("UserType")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -421,6 +513,28 @@ namespace TwoHandApp.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("TwoHandApp.Models.Ad", b =>
+                {
+                    b.HasOne("TwoHandApp.Models.ApplicationUser", "User")
+                        .WithMany("Ads")
+                        .HasForeignKey("UserId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TwoHandApp.Models.AdPhoto", b =>
+                {
+                    b.HasOne("TwoHandApp.Models.Ad", "Ad")
+                        .WithMany("Photos")
+                        .HasForeignKey("AdId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ad");
+                });
+
             modelBuilder.Entity("TwoHandApp.Models.PostPhoto", b =>
                 {
                     b.HasOne("TwoHandApp.Models.Post", "Post")
@@ -443,9 +557,19 @@ namespace TwoHandApp.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("TwoHandApp.Models.Ad", b =>
+                {
+                    b.Navigation("Photos");
+                });
+
             modelBuilder.Entity("TwoHandApp.Models.ApplicationRole", b =>
                 {
                     b.Navigation("Permissions");
+                });
+
+            modelBuilder.Entity("TwoHandApp.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("Ads");
                 });
 #pragma warning restore 612, 618
         }

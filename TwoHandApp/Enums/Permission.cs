@@ -1,4 +1,4 @@
-﻿namespace TwoHandApp.Models;
+﻿namespace TwoHandApp.Enums;
 
 public enum Permission
 {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using TwoHandApp.Enums;
 using TwoHandApp.Models;
 
 namespace TwoHandApp;

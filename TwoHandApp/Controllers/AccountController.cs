@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using TwoHandApp.Enums;
 using TwoHandApp.Models;
 using TwoHandApp.Regexs;
 
@@ -35,7 +36,7 @@ public class AccountController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
-        if(!ValidEmail.IsValidEmail(model.Email))
+        if (!ValidEmail.IsValidEmail(model.Email))
             throw new Exception("Incorrect email");
 
         var user = new ApplicationUser
@@ -69,8 +70,9 @@ public class AccountController : ControllerBase
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(ClaimTypes.NameIdentifier, user.Id)
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
         };
+
 
         foreach (var role in roles)
         {
@@ -155,7 +157,7 @@ public class AccountController : ControllerBase
     [HttpGet("roles")]
     public async Task<IActionResult> GetRoles()
     {
-        var roles =  await _roleManager.Roles.Select(r => r.Name).ToListAsync();
+        var roles = await _roleManager.Roles.Select(r => r.Name).ToListAsync();
         return Ok(roles);
     }
 

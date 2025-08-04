@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TwoHandApp;
+using TwoHandApp.Enums;
 using TwoHandApp.Models;
 
 var builder = WebApplication.CreateBuilder(args);
