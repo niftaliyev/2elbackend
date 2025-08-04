@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using TwoHandApp.Models;
+using TwoHandApp.Regexs;
 
 namespace TwoHandApp.Controllers;
 
@@ -34,6 +35,9 @@ public class AccountController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
+        if(!ValidEmail.IsValidEmail(model.Email))
+            throw new ArgumentException("Incorrect email");
+
         var user = new ApplicationUser
         {
             UserName = model.Email,
@@ -44,10 +48,12 @@ public class AccountController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(result.Errors);
 
-        if (!await _roleManager.RoleExistsAsync(model.Role))
-            await _roleManager.CreateAsync(new ApplicationRole { Name = model.Role });
 
-        await _userManager.AddToRoleAsync(user, model.Role);
+
+        //if (!await _roleManager.RoleExistsAsync(model.Role))
+        //    await _roleManager.CreateAsync(new ApplicationRole { Name = model.Role });
+
+        //await _userManager.AddToRoleAsync(user, model.Role);
 
         return Ok("Пользователь зарегистрирован");
     }

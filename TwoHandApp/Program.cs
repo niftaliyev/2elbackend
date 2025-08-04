@@ -68,9 +68,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Добавление Identity
-builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
+{
+    options.Password.RequireDigit = false;             // без цифр
+    options.Password.RequireLowercase = false;         // без строчных
+    options.Password.RequireUppercase = false;         // без заглавных
+    options.Password.RequireNonAlphanumeric = false;   // без спецсимволов
+    options.Password.RequiredLength = 6;               // минимум 6 символов
+    options.Password.RequiredUniqueChars = 0;          // без требований к уникальности символов
+}).AddEntityFrameworkStores<AppDbContext>()
+  .AddDefaultTokenProviders();
 
 // JWT Authentication //add
 builder.Services.AddAuthentication(options =>
