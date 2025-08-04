@@ -5,7 +5,7 @@
 namespace TwoHandApp.Migrations
 {
     /// <inheritdoc />
-    public partial class _ : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
