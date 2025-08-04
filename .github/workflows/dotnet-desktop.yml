@@ -27,17 +27,6 @@ jobs:
     - name: Publish app
       run: dotnet publish ./TwoHandApp/TwoHandApp.csproj -c Release -o ./publish
 
-    # Добавляем миграции в CI перед копированием на сервер
-    - name: Run EF Core migrations
-      env:
-        DOTNET_ROOT: /usr/share/dotnet
-        # ВАЖНО: Передать строку подключения для миграций из секрета
-        ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION_STRING }}
-      run: |
-        dotnet tool install --global dotnet-ef --version 9.0.0
-        export PATH="$PATH:/home/runner/.dotnet/tools"
-        dotnet ef database update --project ./TwoHandApp/TwoHandApp.csproj --connection "$ConnectionStrings__DefaultConnection"
-
     - name: Deploy via SSH
       uses: appleboy/scp-action@v0.1.7
       with:
