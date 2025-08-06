@@ -16,7 +16,7 @@ public static class SeedAdmin
 
         const string adminEmail = "admin";
         const string adminPassword = "123456";
-        const string adminRoleName = "Admin";
+        const string adminRoleName = "SuperAdmin";
 
         ApplicationRole adminRole = await roleManager.FindByNameAsync(adminRoleName);
         if (adminRole == null)
@@ -32,7 +32,7 @@ public static class SeedAdmin
             {
                 context.RolePermissions.Add(new RolePermission
                 {
-                    RoleId = adminRole.Id,
+                    RoleId = adminRole.Id.ToString(),
                     Permission = perm
                 });
             }
@@ -67,7 +67,7 @@ public static class SeedAdmin
             {
                 context.RolePermissions.Add(new RolePermission
                 {
-                    RoleId = adminRole.Id,
+                    RoleId = adminRole.Id.ToString(),
                     Permission = perm
                 });
             }

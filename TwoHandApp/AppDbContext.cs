@@ -22,24 +22,12 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
             .HasOne(rp => rp.Role)
             .WithMany(r => r.Permissions)
             .HasForeignKey(rp => rp.RoleId);
+
+        builder.Entity<Ad>()
+           .HasOne(a => a.User)
+           .WithMany(u => u.Ads)
+           .HasForeignKey(a => a.UserId)
+           .OnDelete(DeleteBehavior.Cascade); // Удалит все объявления, если удалить пользователя
     }
-    public DbSet<Advertisement> Advertisements { get; set; }
-    public DbSet<Post> Posts { get; set; }
-    public DbSet<PostPhoto> PostPhotos { get; set; }
-
+    public DbSet<Ad> Ads { get; set; }
 }
-
-public class Advertisement
-{
-    public int Id { get; set; }
-    public string Title { get; set; }
-    public string Description { get; set; }
-    public decimal Price { get; set; }
-    public DateTime CreatedDate { get; set; }
-    public bool IsPro { get; set; }
-    public bool IsVip { get; set; }
-    public DateTime? ProExpiryDate { get; set; }
-    public DateTime? VipExpiryDate { get; set; }
-    public string? Image { get; set; } = "default.jpg";
-}
-

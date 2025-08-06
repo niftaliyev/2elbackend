@@ -1,6 +1,8 @@
-﻿//using Microsoft.AspNetCore.Mvc;
+﻿//using Microsoft.AspNetCore.Identity;
+//using Microsoft.AspNetCore.Mvc;
 //using Microsoft.EntityFrameworkCore;
 //using MongoDB.Driver;
+//using System.Security.Claims;
 //using TwoHandApp.Models;
 
 //namespace TwoHandApp.Controllers;
@@ -10,11 +12,13 @@
 //{
 //    private readonly IWebHostEnvironment _environment;
 //    private readonly AppDbContext _context;
+//    private readonly UserManager<ApplicationUser> userManager;
 
-//    public AdvertisementsController(IWebHostEnvironment environment, AppDbContext context)
+//    public AdvertisementsController(IWebHostEnvironment environment, AppDbContext context, UserManager<ApplicationUser> userManager)
 //    {
 //        _environment = environment;
 //        this._context = context;
+//        this.userManager = userManager;
 //    }
 //    [HttpGet("id/{id}")]
 //    public ActionResult<IEnumerable<Advertisement>> GetAdvertisement(int id)
@@ -27,7 +31,7 @@
 //            return NotFound(); // Return 404 if advertisement is not found
 //        }
 
-//        var result =  new
+//        var result = new
 //        {
 //            advertisements.Id,
 //            advertisements.Title,
@@ -98,6 +102,10 @@
 //        if (!ModelState.IsValid)
 //            return BadRequest(ModelState);
 
+//        var user = await GetCurrentUserAsync();
+//        if (user == null)
+//            return Unauthorized();
+
 //        // Проверка на уникальность номера объявления
 //        var exists = await _context.Posts.AnyAsync(p => p.PostNumber == post.PostNumber);
 //        if (exists)
@@ -135,6 +143,8 @@
 //        }
 //        // Добавление поста
 //        post.imageUrl = $"{imagePath}" ?? "default.jpg";
+        
+
 //        _context.Posts.Add(post);
 //        await _context.SaveChangesAsync();
 
@@ -163,4 +173,10 @@
 
 //    //    return Ok(jsonResults);
 //    //}
+
+//    private async Task<ApplicationUser?> GetCurrentUserAsync()
+//    {
+//        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+//        return userId == null ? null : await userManager.FindByIdAsync(userId);
+//    }
 //}

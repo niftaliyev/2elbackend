@@ -54,5 +54,8 @@ public class Post
 
     public int ViewCount { get; set; }
     public string? imageUrl { get; set; } = "default.jpg";
+
+    public Guid? UserId { get; set; }
+    public ApplicationUser User { get; set; } = default!;
 }
 

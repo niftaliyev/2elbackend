@@ -9,7 +9,7 @@ namespace TwoHandApp.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "SuperAdmin")]
 public class RolesController : ControllerBase
 {
     private readonly RoleManager<ApplicationRole> _roleManager;
@@ -29,8 +29,18 @@ public class RolesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetRoles()
     {
-        var roles = await _roleManager.Roles.ToListAsync();
-        return Ok(roles);
+        var roles = await _roleManager.Roles
+     .Include(x => x.Permissions)
+     .ToListAsync();
+
+        var result = roles.Select(r => new RoleDto
+        {
+            Id = r.Id,
+            Name = r.Name,
+            Permissions = r.Permissions.Select(p => p.Permission.ToString()).ToList()
+        });
+
+        return Ok(result);
     }
 
     // ✅ Создать новую роль
@@ -86,4 +96,11 @@ public class RolesController : ControllerBase
         await _userManager.AddToRoleAsync(user, roleName);
         return Ok("Role assigned");
     }
+}
+
+public class RoleDto
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public List<string> Permissions { get; set; }
 }
