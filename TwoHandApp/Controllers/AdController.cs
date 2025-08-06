@@ -33,6 +33,26 @@ public class AdController(AppDbContext context, UserManager<ApplicationUser> use
 
         return Ok(approvedAds);
     }
+    [HttpGet("my-ads")]
+    public async Task<IActionResult> GetMyAds()
+    {
+        var user = await GetCurrentUserAsync();
+        if (user == null)
+            return Unauthorized();
+
+        var myAds = await context.Ads
+            .Where(ad => ad.UserId == user.Id)
+            .Select(x => new
+            {
+                x.Title,
+                x.Price,
+                x.CreatedAt
+            })
+            .OrderByDescending(ad => ad.CreatedAt)
+            .ToListAsync();
+
+        return Ok(myAds);
+    }
 
     [Authorize(AuthenticationSchemes = "JwtBearer")]
     [Authorize(Policy = "Permission.Ads_Create")]
