@@ -96,6 +96,7 @@ public static class SeedAdmin
             {
                 Permission.Ads_Edit_Any,
                 Permission.Ads_Delete_Any,
+                Permission.Ads_Approve,
                 Permission.Comments_View,
                 Permission.Comments_Delete,
                 Permission.Reports_View,

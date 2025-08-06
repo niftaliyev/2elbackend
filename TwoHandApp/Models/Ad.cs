@@ -18,6 +18,7 @@ public class Ad
 
     // Foreign Key
     public string UserId { get; set; } = default!;
+    public AdStatus Status { get; set; }
 
     // Навигационное свойство
     public ApplicationUser User { get; set; } = default!;

@@ -4,14 +4,36 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using TwoHandApp.Dto;
+using TwoHandApp.Enums;
 using TwoHandApp.Models;
 
 namespace TwoHandApp.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/ad")]
 [ApiController]
 public class AdController(AppDbContext context, UserManager<ApplicationUser> userManager) : ControllerBase
 {
+    [HttpGet("approved")]
+    public async Task<IActionResult> GetApprovedAds()
+    {
+        var approvedAds = await context.Ads
+            .Where(ad => ad.Status == AdStatus.Active)
+            .OrderByDescending(ad => ad.CreatedAt)
+            .ToListAsync();
+
+        return Ok(approvedAds);
+    }
+    [HttpGet("pending")]
+    public async Task<IActionResult> GetPendingAds()
+    {
+        var approvedAds = await context.Ads
+            .Where(ad => ad.Status == AdStatus.Pending)
+            .OrderByDescending(ad => ad.CreatedAt)
+            .ToListAsync();
+
+        return Ok(approvedAds);
+    }
+
     [Authorize(AuthenticationSchemes = "JwtBearer")]
     [Authorize(Policy = "Permission.Ads_Create")]
     [HttpPost("ads")]
@@ -35,6 +57,7 @@ public class AdController(AppDbContext context, UserManager<ApplicationUser> use
             HasDelivery = dto.HasDelivery,
             CreatedAt = DateTime.UtcNow,
             ViewCount = 0,
+            Status = AdStatus.Pending,
             UserId = userId.ToString()
         };
 

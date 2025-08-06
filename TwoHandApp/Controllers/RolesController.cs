@@ -8,7 +8,7 @@ using TwoHandApp.Models;
 namespace TwoHandApp.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/roles")]
 [Authorize(Roles = "SuperAdmin")]
 public class RolesController : ControllerBase
 {
@@ -56,7 +56,7 @@ public class RolesController : ControllerBase
     }
 
     // ✅ Добавить permission к роли
-    [HttpPost("{roleName}/permissions")]
+    [HttpPost("{role-name}/permissions")]
     public async Task<IActionResult> AddPermissionsToRole(string roleName, [FromBody] List<Permission> permissions)
     {
         var role = await _roleManager.FindByNameAsync(roleName);

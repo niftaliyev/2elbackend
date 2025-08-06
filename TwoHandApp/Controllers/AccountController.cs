@@ -12,7 +12,7 @@ using TwoHandApp.Regexs;
 namespace TwoHandApp.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/account")]
 public class AccountController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
