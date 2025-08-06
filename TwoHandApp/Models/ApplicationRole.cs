@@ -3,7 +3,7 @@ using TwoHandApp.Enums;
 
 namespace TwoHandApp.Models;
 
-public class ApplicationRole : IdentityRole<string>
+public class ApplicationRole : IdentityRole
 {
     public ICollection<RolePermission> Permissions { get; set; }
 }

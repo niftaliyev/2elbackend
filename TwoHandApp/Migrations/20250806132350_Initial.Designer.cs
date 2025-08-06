@@ -12,8 +12,8 @@ using TwoHandApp;
 namespace TwoHandApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250806131956_AddUserAdRelationship")]
-    partial class AddUserAdRelationship
+    [Migration("20250806132350_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
