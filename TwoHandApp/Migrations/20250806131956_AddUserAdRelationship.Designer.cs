@@ -12,8 +12,8 @@ using TwoHandApp;
 namespace TwoHandApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250804201333_Initial")]
-    partial class Initial
+    [Migration("20250806131956_AddUserAdRelationship")]
+    partial class AddUserAdRelationship
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -136,48 +136,6 @@ namespace TwoHandApp.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("TwoHandApp.Advertisement", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Image")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsPro")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsVip")
-                        .HasColumnType("boolean");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime?>("ProExpiryDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("VipExpiryDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Advertisements");
-                });
-
             modelBuilder.Entity("TwoHandApp.Models.Ad", b =>
                 {
                     b.Property<Guid>("Id")
@@ -201,15 +159,6 @@ namespace TwoHandApp.Migrations
                     b.Property<bool>("IsNew")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsPremium")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsStoreAd")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsVip")
-                        .HasColumnType("boolean");
-
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
@@ -217,17 +166,11 @@ namespace TwoHandApp.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("UserId1")
+                    b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -236,32 +179,9 @@ namespace TwoHandApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
-                    b.ToTable("Ad");
-                });
-
-            modelBuilder.Entity("TwoHandApp.Models.AdPhoto", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AdId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsMain")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AdId");
-
-                    b.ToTable("AdPhoto");
+                    b.ToTable("Ads");
                 });
 
             modelBuilder.Entity("TwoHandApp.Models.ApplicationRole", b =>
@@ -360,93 +280,6 @@ namespace TwoHandApp.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("TwoHandApp.Models.Post", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("AllowMessages")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ContactNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("HasDelivery")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsNew")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("PostNumber")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("PosterType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("ProductType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<int>("ViewCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("imageUrl")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Posts");
-                });
-
-            modelBuilder.Entity("TwoHandApp.Models.PostPhoto", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("PostId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PostId");
-
-                    b.ToTable("PostPhotos");
-                });
-
             modelBuilder.Entity("TwoHandApp.Models.RolePermission", b =>
                 {
                     b.Property<int>("Id")
@@ -534,33 +367,11 @@ namespace TwoHandApp.Migrations
                 {
                     b.HasOne("TwoHandApp.Models.ApplicationUser", "User")
                         .WithMany("Ads")
-                        .HasForeignKey("UserId1")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("TwoHandApp.Models.AdPhoto", b =>
-                {
-                    b.HasOne("TwoHandApp.Models.Ad", "Ad")
-                        .WithMany("Photos")
-                        .HasForeignKey("AdId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Ad");
-                });
-
-            modelBuilder.Entity("TwoHandApp.Models.PostPhoto", b =>
-                {
-                    b.HasOne("TwoHandApp.Models.Post", "Post")
-                        .WithMany()
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("TwoHandApp.Models.RolePermission", b =>
@@ -576,11 +387,6 @@ namespace TwoHandApp.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
-                });
-
-            modelBuilder.Entity("TwoHandApp.Models.Ad", b =>
-                {
-                    b.Navigation("Photos");
                 });
 
             modelBuilder.Entity("TwoHandApp.Models.ApplicationRole", b =>
