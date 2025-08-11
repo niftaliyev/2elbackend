@@ -73,8 +73,10 @@ public class AccountController : ControllerBase
         var roles = await _userManager.GetRolesAsync(user);
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim("fullName", user.FullName ?? ""),
+            new Claim("phoneNumber", user.PhoneNumber ?? ""),
+            new Claim("userType", user.UserType ?? "")
         };
 
 
