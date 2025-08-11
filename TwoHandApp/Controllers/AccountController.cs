@@ -114,7 +114,7 @@ public class AccountController : ControllerBase
         {
             HttpOnly = true,
             Secure = false, // включи, если используешь HTTPS
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.None, // иначе не отправится при кросс-доменных запросах
             Expires = DateTime.UtcNow.AddHours(2)
         });
 
