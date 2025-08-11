@@ -46,8 +46,7 @@ public class AccountController : ControllerBase
             Email = model.Email,
             PhoneNumber = model.PhoneNumber,
             EmailConfirmed = true, // Устанавливаем EmailConfirmed в true для упрощения
-            PhoneNumberConfirmed = true, // Устанавливаем PhoneNumberConfirmed в true для упрощения
-            UserType = model.UserType,
+            PhoneNumberConfirmed = true
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
