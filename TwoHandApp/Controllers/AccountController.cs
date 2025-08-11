@@ -72,13 +72,12 @@ public class AccountController : ControllerBase
 
         var roles = await _userManager.GetRolesAsync(user);
         var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim("fullName", user.FullName ?? ""),
-            new Claim("phoneNumber", user.PhoneNumber ?? ""),
-            new Claim("userType", user.UserType ?? "")
-        };
-
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim("fullName", user.FullName ?? ""),
+        new Claim("phoneNumber", user.PhoneNumber ?? ""),
+        new Claim("userType", user.UserType ?? "")
+    };
 
         foreach (var role in roles)
         {
@@ -113,12 +112,16 @@ public class AccountController : ControllerBase
         Response.Cookies.Append("jwt", tokenString, new CookieOptions
         {
             HttpOnly = true,
-            Secure = true, 
-            SameSite = SameSiteMode.None, 
+            Secure = true, // включи, если HTTPS
+            SameSite = SameSiteMode.None,
             Expires = DateTime.UtcNow.AddHours(2)
         });
 
-        return Ok(new { message = "Login successful" });
+        return Ok(new
+        {
+            message = "Login successful",
+            token = tokenString // отдаём токен в JSON для удобства
+        });
     }
 
     [Authorize(Roles = "SuperAdmin")]
