@@ -113,7 +113,7 @@ public class AccountController : ControllerBase
         Response.Cookies.Append("jwt", tokenString, new CookieOptions
         {
             HttpOnly = true,
-            Secure = true, // включи, если используешь HTTPS
+            Secure = false, // включи, если используешь HTTPS
             SameSite = SameSiteMode.Strict,
             Expires = DateTime.UtcNow.AddHours(2)
         });
