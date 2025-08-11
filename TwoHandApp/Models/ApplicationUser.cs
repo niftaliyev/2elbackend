@@ -7,6 +7,7 @@ public class ApplicationUser : IdentityUser
     public string? FullName { get; set; } = default!;
     public string? PhoneNumber { get; set; } = default!;
     public string? UserType { get; set; } = "Şəxsi"; // Və ya "Mağaza"
+    public decimal? Balance { get; set; } = 0m;
 
     public ICollection<Ad> Ads { get; set; } = new List<Ad>();
 

@@ -42,6 +42,7 @@ public class AccountController : ControllerBase
         {
             FullName = model.FullName,
             UserName = model.Email,
+            Balance = 0,
             Email = model.Email,
             PhoneNumber = model.PhoneNumber,
             EmailConfirmed = true, // Устанавливаем EmailConfirmed в true для упрощения
@@ -76,7 +77,8 @@ public class AccountController : ControllerBase
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim("fullName", user.FullName ?? ""),
                 new Claim("phoneNumber", user.PhoneNumber ?? ""),
-                new Claim("userType", user.UserType ?? "")
+                new Claim("userType", user.UserType ?? ""),
+                new Claim("Balance", user.Balance.ToString())
             };
 
 

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TwoHandApp;
@@ -11,9 +12,11 @@ using TwoHandApp;
 namespace TwoHandApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250811185200_Balance")]
+    partial class Balance
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -156,15 +159,6 @@ namespace TwoHandApp.Migrations
                     b.Property<bool>("IsNew")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsPremium")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsVip")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("PremiumUntil")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
@@ -185,9 +179,6 @@ namespace TwoHandApp.Migrations
 
                     b.Property<int>("ViewCount")
                         .HasColumnType("integer");
-
-                    b.Property<DateTime?>("VipUntil")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 

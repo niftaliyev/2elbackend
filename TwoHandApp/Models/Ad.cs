@@ -16,6 +16,13 @@ public class Ad
     public DateTime CreatedAt { get; set; }
     public int ViewCount { get; set; }
 
+    public bool IsPremium { get; set; }
+    public bool IsVip { get; set; }
+
+    // когда куплено — дата
+    public DateTime? PremiumUntil { get; set; }
+    public DateTime? VipUntil { get; set; }
+
     // Foreign Key
     public string UserId { get; set; } = default!;
     public AdStatus Status { get; set; }
