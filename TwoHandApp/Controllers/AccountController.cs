@@ -108,7 +108,17 @@ public class AccountController : ControllerBase
             signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
         );
 
-        return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+        Response.Cookies.Append("jwt", tokenString, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true, // включи, если используешь HTTPS
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddHours(2)
+        });
+
+        return Ok(new { message = "Login successful" });
     }
 
     [Authorize(Roles = "SuperAdmin")]
