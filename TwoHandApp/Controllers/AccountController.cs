@@ -122,7 +122,7 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
     Response.Cookies.Append("access_token", jwtToken, new CookieOptions
     {
         HttpOnly = true,
-        Secure = true,                  // обязательно, если HTTPS
+        Secure = false,                  // обязательно, если HTTPS
         SameSite = SameSiteMode.None,   // разрешаем кросс-домен
         Domain = "34.107.47.234",       // домен API
         Expires = DateTimeOffset.UtcNow.AddHours(2)
