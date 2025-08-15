@@ -121,9 +121,10 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
     // Ставим JWT в HttpOnly cookie
     Response.Cookies.Append("access_token", jwtToken, new CookieOptions
     {
-        HttpOnly = true,              // Нельзя прочитать из JS
-        Secure = true,                // Только HTTPS в проде
-        SameSite = SameSiteMode.Strict, // Не передаётся с внешних сайтов
+        HttpOnly = true,
+        Secure = true,                  // обязательно, если HTTPS
+        SameSite = SameSiteMode.None,   // разрешаем кросс-домен
+        Domain = "34.107.47.234",       // домен API
         Expires = DateTimeOffset.UtcNow.AddHours(2)
     });
 
