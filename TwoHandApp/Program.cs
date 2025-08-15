@@ -5,6 +5,7 @@ using System.Text;
 using TwoHandApp;
 using TwoHandApp.Enums;
 using TwoHandApp.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,23 +83,37 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 
 // JWT Authentication //add
 builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = "JwtBearer";
-    options.DefaultChallengeScheme = "JwtBearer";
-})
-.AddJwtBearer("JwtBearer", options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-    };
-});
+        options.DefaultAuthenticateScheme = "JwtBearer";
+        options.DefaultChallengeScheme = "JwtBearer";
+    })
+    .AddJwtBearer("JwtBearer", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+
+        // ✅ Достаём токен из HttpOnly cookie
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var token = context.Request.Cookies["access_token"]; // имя куки как в Login
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Token = token;
+                }
+                return Task.CompletedTask;
+            }
+        };
+    });
 
 
 var app = builder.Build();

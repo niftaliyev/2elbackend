@@ -64,53 +64,80 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginModel model)
+public async Task<IActionResult> Login([FromBody] LoginModel model)
+{
+    var user = await _userManager.FindByEmailAsync(model.Email);
+    if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
+        return Unauthorized();
+
+    var roles = await _userManager.GetRolesAsync(user);
+
+    var claims = new List<Claim>
     {
-        var user = await _userManager.FindByEmailAsync(model.Email);
-        if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
-            return Unauthorized();
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim("fullName", user.FullName ?? ""),
+        new Claim("phoneNumber", user.PhoneNumber ?? ""),
+        new Claim("userType", user.UserType ?? ""),
+        new Claim("Balance", user.Balance.ToString())
+    };
+    var publicClaims = new Dictionary<string, string>
+    {
+        ["nameIdentifier"] = user.Id.ToString(),
+        ["fullName"] = user.FullName ?? "",
+        ["phoneNumber"] = user.PhoneNumber ?? "",
+        ["balance"] = user.Balance.ToString()
+    };
+    foreach (var role in roles)
+    {
+        claims.Add(new Claim(ClaimTypes.Role, role));
 
-        var roles = await _userManager.GetRolesAsync(user);
-        var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim("fullName", user.FullName ?? ""),
-                new Claim("phoneNumber", user.PhoneNumber ?? ""),
-                new Claim("userType", user.UserType ?? ""),
-                new Claim("Balance", user.Balance.ToString())
-            };
-
-
-        foreach (var role in roles)
+        var roleEntity = await _roleManager.FindByNameAsync(role);
+        if (roleEntity != null)
         {
-            claims.Add(new Claim(ClaimTypes.Role, role));
+            var permissions = _context.RolePermissions
+                .Where(p => p.RoleId == roleEntity.Id)
+                .Select(p => p.Permission.ToString())
+                .ToList();
 
-            var roleEntity = await _roleManager.FindByNameAsync(role);
-            if (roleEntity != null)
+            foreach (var perm in permissions)
             {
-                var permissions = _context.RolePermissions
-                    .Where(p => p.RoleId == roleEntity.Id)
-                    .Select(p => p.Permission.ToString())
-                    .ToList();
-
-                foreach (var perm in permissions)
-                {
-                    claims.Add(new Claim("permission", perm));
-                }
+                claims.Add(new Claim("permission", perm));
             }
         }
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-        var token = new JwtSecurityToken(
-            issuer: _config["Jwt:Issuer"],
-            audience: _config["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(2),
-            signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
-        );
-
-        return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
     }
+
+    // Генерация JWT
+    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+    var token = new JwtSecurityToken(
+        issuer: _config["Jwt:Issuer"],
+        audience: _config["Jwt:Audience"],
+        claims: claims,
+        expires: DateTime.UtcNow.AddHours(2),
+        signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+    );
+
+    var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+    // Ставим JWT в HttpOnly cookie
+    Response.Cookies.Append("access_token", jwtToken, new CookieOptions
+    {
+        HttpOnly = true,              // Нельзя прочитать из JS
+        Secure = true,                // Только HTTPS в проде
+        SameSite = SameSiteMode.Strict, // Не передаётся с внешних сайтов
+        Expires = DateTimeOffset.UtcNow.AddHours(2)
+    });
+
+    // var claimValues = claims
+    //     .GroupBy(c => c.Type)
+    //     .ToDictionary(g => g.Key, g => g.Select(c => c.Value).ToList());
+
+    return Ok(new
+    {
+        message = "Login successful",
+        claims = publicClaims
+    });
+    
+}
 
     [Authorize(Roles = "SuperAdmin")]
     [HttpGet("admin-only")]
