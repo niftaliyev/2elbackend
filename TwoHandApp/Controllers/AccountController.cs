@@ -122,12 +122,11 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
     Response.Cookies.Append("access_token", jwtToken, new CookieOptions
     {
         HttpOnly = true,
-        Secure = false,                  // обязательно, если HTTPS
-        SameSite = SameSiteMode.None,   // разрешаем кросс-домен
-        Domain = "34.107.47.234",       // домен API
+        Secure = false,             // временно отключаем для HTTP
+        SameSite = SameSiteMode.Lax,
         Expires = DateTimeOffset.UtcNow.AddHours(2)
     });
-
+    
     // var claimValues = claims
     //     .GroupBy(c => c.Type)
     //     .ToDictionary(g => g.Key, g => g.Select(c => c.Value).ToList());
