@@ -54,14 +54,13 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
         policy
-            .AllowAnyOrigin() // если тестируешь
-            //.WithOrigins("http://localhost:3000", "https://myapp.com") // лучше так
+            .WithOrigins("http://localhost:3000", "https://myfrontend.com") // <-- укажи React-домены
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials();
+            .AllowCredentials(); // чтобы куки работали
     });
 });
 
