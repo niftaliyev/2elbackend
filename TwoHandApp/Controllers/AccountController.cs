@@ -134,11 +134,40 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
     return Ok(new
     {
         message = "Login successful",
-        claims = publicClaims
+        info = publicClaims
     });
     
 }
 
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<IActionResult> Me()
+    {
+        // достаем userId из клейма
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+            return Unauthorized();
+
+        // достаем роли
+        var roles = await _userManager.GetRolesAsync(user);
+
+        // возвращаем инфу
+        return Ok(new
+        {
+            id = user.Id,
+            fullName = user.FullName,
+            email = user.Email,
+            phoneNumber = user.PhoneNumber,
+            balance = user.Balance
+        });
+    }
+    
+    
     [Authorize(Roles = "SuperAdmin")]
     [HttpGet("admin-only")]
     public IActionResult AdminOnly()
