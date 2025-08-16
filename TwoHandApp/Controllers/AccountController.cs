@@ -85,7 +85,8 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
         ["nameIdentifier"] = user.Id.ToString(),
         ["fullName"] = user.FullName ?? "",
         ["phoneNumber"] = user.PhoneNumber ?? "",
-        ["balance"] = user.Balance.ToString()
+        ["balance"] = user.Balance.ToString(),
+        ["email"] = user.Email ?? "",
     };
     foreach (var role in roles)
     {
