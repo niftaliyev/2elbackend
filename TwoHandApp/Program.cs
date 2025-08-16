@@ -56,11 +56,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy
-            .WithOrigins("http://localhost:3000", "https://myfrontend.com") // <-- укажи React-домены
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials(); // чтобы куки работали
+        policy.WithOrigins("http://localhost:3000", "http://34.107.47.234")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
