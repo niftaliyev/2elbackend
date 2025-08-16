@@ -125,7 +125,7 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
         HttpOnly = true,
         Secure = false,             // временно отключаем для HTTP
-        SameSite = SameSiteMode.Lax,
+        SameSite = SameSiteMode.None,
         Expires = DateTimeOffset.UtcNow.AddHours(2)
     });
     
