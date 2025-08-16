@@ -165,7 +165,8 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
             fullName = user.FullName,
             email = user.Email,
             phoneNumber = user.PhoneNumber,
-            balance = user.Balance
+            balance = user.Balance,
+            roles = roles.ToList()
         });
     }
     
