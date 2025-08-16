@@ -126,7 +126,8 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
         HttpOnly = true,
         Secure = false,             // временно отключаем для HTTP
         SameSite = SameSiteMode.None,
-        Expires = DateTimeOffset.UtcNow.AddHours(2)
+        Expires = DateTimeOffset.UtcNow.AddHours(2),
+        Path ="/"
     });
     
     // var claimValues = claims
