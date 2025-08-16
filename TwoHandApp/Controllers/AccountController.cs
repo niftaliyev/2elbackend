@@ -80,13 +80,14 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
         new Claim("userType", user.UserType ?? ""),
         new Claim("Balance", user.Balance.ToString())
     };
-    var publicClaims = new Dictionary<string, string>
+    var publicClaims = new Dictionary<string, object>
     {
         ["nameIdentifier"] = user.Id.ToString(),
         ["fullName"] = user.FullName ?? "",
         ["phoneNumber"] = user.PhoneNumber ?? "",
         ["balance"] = user.Balance.ToString(),
         ["email"] = user.Email ?? "",
+        ["roles"] = roles.ToList()
     };
     foreach (var role in roles)
     {
