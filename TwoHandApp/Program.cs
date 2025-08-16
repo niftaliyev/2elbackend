@@ -54,13 +54,14 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
         policy
-            .AllowAnyOrigin()
+            .AllowAnyOrigin() // если тестируешь
+            //.WithOrigins("http://localhost:3000", "https://myapp.com") // лучше так
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials(); // 👈 обязательно
+            .AllowCredentials();
     });
 });
 
@@ -141,7 +142,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 // Enable CORS
-app.UseCors("AllowFrontend");
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
