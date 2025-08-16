@@ -141,7 +141,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 // Enable CORS
-app.UseCors("AllowAll");
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
