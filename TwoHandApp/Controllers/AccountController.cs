@@ -124,9 +124,9 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
     Response.Cookies.Append("access_token", jwtToken, new CookieOptions
     {
         HttpOnly = true,
-        Secure = false,             // временно отключаем для HTTP
-        SameSite = SameSiteMode.Lax,
-        Expires = DateTimeOffset.UtcNow.AddHours(2)
+        Secure = true,            
+        SameSite = SameSiteMode.None,
+        Expires = DateTimeOffset.UtcNow.AddHours(2),
     });
     
     // var claimValues = claims

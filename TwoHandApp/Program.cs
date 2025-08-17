@@ -57,10 +57,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy
-            .WithOrigins("http://localhost:3000", "http://34.107.47.234") // твой фронт
+            .WithOrigins("http://localhost:5005", "http://34.107.47.234") // твой фронт
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials(); // 👈 обязательно
+            .AllowCredentials(); 
     });
 });
 
