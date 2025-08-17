@@ -124,8 +124,8 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
     Response.Cookies.Append("access_token", jwtToken, new CookieOptions
     {
         HttpOnly = true,
-        Secure = true,             // временно отключаем для HTTP
-        SameSite = SameSiteMode.None,
+        Secure = false,             // временно отключаем для HTTP
+        SameSite = SameSiteMode.Lax,
         Expires = DateTimeOffset.UtcNow.AddHours(2),
         Path ="/"
     });
