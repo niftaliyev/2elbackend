@@ -249,6 +249,16 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
         Path ="/"
     });
     
+    // Генерация refresh_token (просто GUID, можно хранить в БД если нужно инвалидировать)
+    var refreshToken = Guid.NewGuid().ToString("N");
+    Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = false,  // пока без https
+        SameSite = SameSiteMode.Lax,
+        Expires = DateTimeOffset.UtcNow.AddDays(7),
+        Path = "/"
+    });
     // var claimValues = claims
     //     .GroupBy(c => c.Type)
     //     .ToDictionary(g => g.Key, g => g.Select(c => c.Value).ToList());
