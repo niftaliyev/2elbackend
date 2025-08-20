@@ -30,4 +30,6 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
            .OnDelete(DeleteBehavior.Cascade); // Удалит все объявления, если удалить пользователя
     }
     public DbSet<Ad> Ads { get; set; }
+    public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
+
 }

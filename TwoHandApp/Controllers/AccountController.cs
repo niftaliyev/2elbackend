@@ -82,6 +82,13 @@ public async Task<IActionResult> Refresh()
     if (string.IsNullOrEmpty(refreshToken))
         return Unauthorized(new { message = "Invalid refresh token" });
 
+    // Проверяем refresh_token в базе
+    var dbToken = await _context.UserRefreshTokens
+        .FirstOrDefaultAsync(t => t.Token == refreshToken && !t.IsRevoked);
+
+    if (dbToken == null || dbToken.ExpiresAt < DateTime.UtcNow)
+        return Unauthorized(new { message = "Invalid or expired refresh token" });
+
     // достаём access_token (он может быть истёкший, но claims там есть)
     if (!Request.Cookies.TryGetValue("access_token", out var oldAccess))
         return Unauthorized(new { message = "No access token" });
@@ -154,8 +161,16 @@ public async Task<IActionResult> Refresh()
     );
     var newAccessToken = new JwtSecurityTokenHandler().WriteToken(token);
 
-    // Новый refresh_token
+    // Ротация refresh_token: помечаем старый отозванным и создаём новый
+    dbToken.IsRevoked = true;
     var newRefreshToken = Guid.NewGuid().ToString("N");
+    _context.UserRefreshTokens.Add(new UserRefreshToken
+    {
+        UserId = user.Id,
+        Token = newRefreshToken,
+        ExpiresAt = DateTime.UtcNow.AddDays(7)
+    });
+    await _context.SaveChangesAsync();
 
     Response.Cookies.Append("access_token", newAccessToken, new CookieOptions
     {
@@ -181,6 +196,7 @@ public async Task<IActionResult> Refresh()
         info = publicClaims
     });
 }
+
 
     [HttpPost("login")]
 public async Task<IActionResult> Login([FromBody] LoginModel model)
@@ -251,6 +267,13 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
     
     // Генерация refresh_token (просто GUID, можно хранить в БД если нужно инвалидировать)
     var refreshToken = Guid.NewGuid().ToString("N");
+    _context.UserRefreshTokens.Add(new UserRefreshToken
+    {
+        UserId = user.Id,
+        Token = refreshToken,
+        ExpiresAt = DateTime.UtcNow.AddDays(7)
+    });
+    await _context.SaveChangesAsync();
     Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
     {
         HttpOnly = true,
