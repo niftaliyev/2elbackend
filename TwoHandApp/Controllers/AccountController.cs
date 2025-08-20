@@ -64,13 +64,26 @@ public class AccountController : ControllerBase
     }
     
     [HttpPost("logout")]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
+        if (Request.Cookies.TryGetValue("refresh_token", out var refreshToken))
+        {
+            var dbToken = await _context.UserRefreshTokens
+                .FirstOrDefaultAsync(t => t.Token == refreshToken);
+
+            if (dbToken != null)
+            {
+                dbToken.IsRevoked = true; // или _context.UserRefreshTokens.Remove(dbToken);
+                await _context.SaveChangesAsync();
+            }
+        }
+
         Response.Cookies.Delete("access_token");
         Response.Cookies.Delete("refresh_token");
 
         return Ok(new { message = "Logged out" });
     }
+
 
     
 [HttpPost("refresh")]
