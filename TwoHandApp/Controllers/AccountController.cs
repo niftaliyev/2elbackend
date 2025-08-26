@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using TwoHandApp.Dto;
 using TwoHandApp.Dtos;
 using TwoHandApp.Enums;
 using TwoHandApp.Models;
@@ -422,9 +423,29 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
 
         var active = await _context.Ads
             .Where(ad => ad.UserId == user.Id && ad.Status == AdStatus.Active)
-            .Include(x => x.Images)
+            .Include(ad => ad.Images)
+            .Include(ad => ad.User) // <- включаем User
+            .Select(f => new AdDto
+            {
+                Id = f.Id,
+                Name = f.FullName,
+                Description = f.Description,
+                Price = f.Price,
+                IsNew = f.IsNew,
+                IsDeliverable = f.IsDeliverable,
+                CreatedAt = f.CreatedAt,
+                UserId = f.UserId,
+                UserFullName = f.User.FullName, // теперь безопасно
+                Images = f.Images.Select(i => new AdImageDto
+                {
+                    Id = i.Id,
+                    Url = i.Url
+                }).ToList()
+            })
             .OrderByDescending(ad => ad.CreatedAt)
             .ToListAsync();
+
+
 
         return Ok(active);
     }
@@ -437,9 +458,29 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
 
         var inActive = await _context.Ads
             .Where(ad => ad.UserId == user.Id && ad.Status == AdStatus.Inactive)
-            .Include(x => x.Images)
+            .Include(ad => ad.Images)
+            .Include(ad => ad.User) // <- включаем User
+            .Select(f => new AdDto
+            {
+                Id = f.Id,
+                Name = f.FullName,
+                Description = f.Description,
+                Price = f.Price,
+                IsNew = f.IsNew,
+                IsDeliverable = f.IsDeliverable,
+                CreatedAt = f.CreatedAt,
+                UserId = f.UserId,
+                UserFullName = f.User.FullName, // теперь безопасно
+                Images = f.Images.Select(i => new AdImageDto
+                {
+                    Id = i.Id,
+                    Url = i.Url
+                }).ToList()
+            })
             .OrderByDescending(ad => ad.CreatedAt)
             .ToListAsync();
+
+
 
         return Ok(inActive);
     }
@@ -452,9 +493,29 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
 
         var rejected = await _context.Ads
             .Where(ad => ad.UserId == user.Id && ad.Status == AdStatus.Rejected)
-            .Include(x => x.Images)
+            .Include(ad => ad.Images)
+            .Include(ad => ad.User) // <- включаем User
+            .Select(f => new AdDto
+            {
+                Id = f.Id,
+                Name = f.FullName,
+                Description = f.Description,
+                Price = f.Price,
+                IsNew = f.IsNew,
+                IsDeliverable = f.IsDeliverable,
+                CreatedAt = f.CreatedAt,
+                UserId = f.UserId,
+                UserFullName = f.User.FullName, // теперь безопасно
+                Images = f.Images.Select(i => new AdImageDto
+                {
+                    Id = i.Id,
+                    Url = i.Url
+                }).ToList()
+            })
             .OrderByDescending(ad => ad.CreatedAt)
             .ToListAsync();
+
+
 
         return Ok(rejected);
     }
@@ -467,9 +528,28 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
 
         var rejected = await _context.Ads
             .Where(ad => ad.UserId == user.Id && ad.Status == AdStatus.Pending)
-            .Include(x => x.Images)
+            .Include(ad => ad.Images)
+            .Include(ad => ad.User) // <- включаем User
+            .Select(f => new AdDto
+            {
+                Id = f.Id,
+                Name = f.FullName,
+                Description = f.Description,
+                Price = f.Price,
+                IsNew = f.IsNew,
+                IsDeliverable = f.IsDeliverable,
+                CreatedAt = f.CreatedAt,
+                UserId = f.UserId,
+                UserFullName = f.User.FullName, // теперь безопасно
+                Images = f.Images.Select(i => new AdImageDto
+                {
+                    Id = i.Id,
+                    Url = i.Url
+                }).ToList()
+            })
             .OrderByDescending(ad => ad.CreatedAt)
             .ToListAsync();
+
 
         return Ok(rejected);
     }
