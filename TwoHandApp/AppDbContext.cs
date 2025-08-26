@@ -69,7 +69,11 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
         
     }
 
-    public DbSet<Ad> Ads { get; set; }
-    public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
+    public DbSet<Ad> Ads { get; set; } = default!;
+    public DbSet<AdImage> AdImages { get; set; } = default!;
+    public DbSet<Category> Categories { get; set; } = default!;
+    public DbSet<City> Cities { get; set; } = default!;
+    public DbSet<AdType> AdTypes { get; set; } = default!;
+    public DbSet<UserRefreshToken> UserRefreshTokens { get; set; } = default!;
 
 }
