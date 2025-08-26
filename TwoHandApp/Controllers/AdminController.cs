@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TwoHandApp.Dto;
 using TwoHandApp.Dtos;
+using TwoHandApp.Enums;
 using TwoHandApp.Models;
 
 namespace TwoHandApp.Controllers;
@@ -11,6 +12,16 @@ namespace TwoHandApp.Controllers;
 [ApiController]
 public class AdminController(AppDbContext context, UserManager<ApplicationUser> userManager) : ControllerBase
 {
+    [HttpGet("pending")]
+    public async Task<IActionResult> GetPendingAds()
+    {
+        var approvedAds = await context.Ads
+            .Where(ad => ad.Status == AdStatus.Pending)
+            .OrderByDescending(ad => ad.CreatedAt)
+            .ToListAsync();
+
+        return Ok(approvedAds);
+    }
     [HttpPost("approve-ad")]
     public async Task<IActionResult> Approve([FromQuery] string id)
     {
