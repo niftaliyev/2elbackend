@@ -13,5 +13,7 @@ public class ApplicationUser : IdentityUser
 
     public ICollection<IdentityUserRole<string>> UserRoles { get; set; } = new List<IdentityUserRole<string>>();
     public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
+    public ICollection<FavouriteAd> FavouriteAds { get; set; } = new List<FavouriteAd>();
+
 
 }

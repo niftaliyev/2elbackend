@@ -51,6 +51,18 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
             .HasForeignKey(a => a.CityId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.Entity<FavouriteAd>()
+            .HasOne(f => f.User)
+            .WithMany(u => u.FavouriteAds)
+            .HasForeignKey(f => f.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<FavouriteAd>()
+            .HasOne(f => f.Ad)
+            .WithMany(a => a.Favourites)
+            .HasForeignKey(f => f.AdId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
         // Seed данные для FK
         builder.Entity<AdType>().HasData(
             new AdType { Id = 1, Name = "Business" },
@@ -75,5 +87,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<City> Cities { get; set; } = default!;
     public DbSet<AdType> AdTypes { get; set; } = default!;
     public DbSet<UserRefreshToken> UserRefreshTokens { get; set; } = default!;
+    public DbSet<FavouriteAd> FavouriteAds { get; set; } = default!;
+
 
 }

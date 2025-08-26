@@ -75,4 +75,7 @@ public class Ad
     // Enum хранится как int в БД
     [Required]
     public AdStatus Status { get; set; }
+    
+    public ICollection<FavouriteAd> Favourites { get; set; } = new List<FavouriteAd>();
+
 }
