@@ -8,7 +8,7 @@ using TwoHandApp.Models;
 namespace TwoHandApp.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/favourites")]
 [Authorize(AuthenticationSchemes = "JwtBearer")]
 public class FavouritesController : ControllerBase
 {
@@ -28,7 +28,7 @@ public class FavouritesController : ControllerBase
     }
 
     // Добавить объявление в избранное
-    [HttpPost("{adId}")]
+    [HttpPost("{ad-id}")]
     public async Task<IActionResult> AddToFavourites(Guid adId)
     {
         var user = await GetCurrentUserAsync();
@@ -49,7 +49,7 @@ public class FavouritesController : ControllerBase
     }
 
     // Удалить из избранного
-    [HttpDelete("{adId}")]
+    [HttpDelete("{ad-id}")]
     public async Task<IActionResult> RemoveFromFavourites(Guid adId)
     {
         var user = await GetCurrentUserAsync();

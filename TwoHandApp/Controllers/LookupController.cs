@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace TwoHandApp.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/lookup")]
 public class LookupController : ControllerBase
 {
     private readonly AppDbContext context;
