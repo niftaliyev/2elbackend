@@ -20,6 +20,7 @@ public class AdController(AppDbContext context, UserManager<ApplicationUser> use
     {
         var approvedAds = await context.Ads
             .Where(ad => ad.Status == AdStatus.Active)
+            .Include(x => x.Images)
             .OrderByDescending(ad => ad.CreatedAt)
             .ToListAsync();
 

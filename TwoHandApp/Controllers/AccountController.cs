@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using TwoHandApp.Dtos;
+using TwoHandApp.Enums;
 using TwoHandApp.Models;
 using TwoHandApp.Regexs;
 using TwoHandApp.Helpers;
@@ -412,25 +413,50 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
             return StatusCode(500, ex.Message);
         }
     }
-    [HttpGet("my-ads")]
-    public async Task<IActionResult> GetMyAds()
+    [HttpGet("active-ads")]
+    public async Task<IActionResult> GetActiveAds()
     {
         var user = await GetCurrentUserAsync();
         if (user == null)
             return Unauthorized();
 
-        var myAds = await _context.Ads
-            .Where(ad => ad.UserId == user.Id)
-            .Select(x => new
-            {
-                x.Title,
-                x.Price,
-                x.CreatedAt
-            })
+        var active = await _context.Ads
+            .Where(ad => ad.UserId == user.Id && ad.Status == AdStatus.Active)
+            .Include(x => x.Images)
             .OrderByDescending(ad => ad.CreatedAt)
             .ToListAsync();
 
-        return Ok(myAds);
+        return Ok(active);
+    }
+    [HttpGet("inactive-ads")]
+    public async Task<IActionResult> GetInActiveAds()
+    {
+        var user = await GetCurrentUserAsync();
+        if (user == null)
+            return Unauthorized();
+
+        var inActive = await _context.Ads
+            .Where(ad => ad.UserId == user.Id && ad.Status == AdStatus.Inactive)
+            .Include(x => x.Images)
+            .OrderByDescending(ad => ad.CreatedAt)
+            .ToListAsync();
+
+        return Ok(inActive);
+    }
+    [HttpGet("rejected-ads")]
+    public async Task<IActionResult> GetRejectedAds()
+    {
+        var user = await GetCurrentUserAsync();
+        if (user == null)
+            return Unauthorized();
+
+        var rejected = await _context.Ads
+            .Where(ad => ad.UserId == user.Id && ad.Status == AdStatus.Rejected)
+            .Include(x => x.Images)
+            .OrderByDescending(ad => ad.CreatedAt)
+            .ToListAsync();
+
+        return Ok(rejected);
     }
     private async Task<ApplicationUser?> GetCurrentUserAsync()
     {
