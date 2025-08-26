@@ -31,35 +31,62 @@ public class AdController(AppDbContext context, UserManager<ApplicationUser> use
     [Authorize(AuthenticationSchemes = "JwtBearer")]
     [Authorize(Policy = "Permission.Ads_Create")]
     [HttpPost("ads")]
-
-    public async Task<IActionResult> CreateAd([FromBody] CreateAdDto dto)
+    public async Task<IActionResult> CreateAd([FromForm] CreateAdDto dto)
     {
         var user = await GetCurrentUserAsync();
         if (user == null)
             return Unauthorized();
 
-        var userId = user.Id ?? Guid.Empty.ToString();
         var ad = new Ad
         {
             Id = Guid.NewGuid(),
             Title = dto.Title,
             Description = dto.Description,
             Price = dto.Price,
-            City = dto.City,
             IsNew = dto.IsNew,
-            ProductType = dto.ProductType,
-            HasDelivery = dto.HasDelivery,
+            IsDeliverable = dto.IsDeliverable,
             CreatedAt = DateTime.UtcNow,
             ViewCount = 0,
             Status = AdStatus.Pending,
-            UserId = userId.ToString()
+            UserId = user.Id,
+            CategoryId = dto.CategoryId,
+            CityId = dto.CityId,
+            AdTypeId = dto.AdTypeId,
+            FullName = dto.FullName,
+            PhoneNumber = dto.PhoneNumber,
+            Email = dto.Email
         };
+
+        // Сохраняем файлы
+        foreach (var file in dto.Images)
+        {
+            if (file.Length > 0)
+            {
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                var filePath = Path.Combine("wwwroot/uploads/ads", fileName);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                ad.Images.Add(new AdImage
+                {
+                    Id = Guid.NewGuid(),
+                    Url = $"/uploads/ads/{fileName}",
+                    AdId = ad.Id
+                });
+            }
+        }
 
         context.Ads.Add(ad);
         await context.SaveChangesAsync();
 
         return Ok(new { message = "Elan yaradıldı", ad.Id });
     }
+
     private async Task<ApplicationUser?> GetCurrentUserAsync()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -67,7 +94,4 @@ public class AdController(AppDbContext context, UserManager<ApplicationUser> use
 
         return userId == null ? null : await userManager.FindByIdAsync(userId);
     }
-
-    
-
 }

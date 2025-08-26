@@ -17,6 +17,7 @@ public class AdminController(AppDbContext context, UserManager<ApplicationUser> 
     {
         var approvedAds = await context.Ads
             .Where(ad => ad.Status == AdStatus.Pending)
+            .Include(ad => ad.Images)
             .OrderByDescending(ad => ad.CreatedAt)
             .ToListAsync();
 

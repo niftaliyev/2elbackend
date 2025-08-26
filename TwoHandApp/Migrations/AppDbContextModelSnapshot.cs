@@ -139,19 +139,36 @@ namespace TwoHandApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("AdTypeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CityId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
-                    b.Property<bool>("HasDelivery")
-                        .HasColumnType("boolean");
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<bool>("IsDeliverable")
+                        .HasColumnType("boolean")
+                        .HasAnnotation("Relational:JsonPropertyName", "isDeliverable");
 
                     b.Property<bool>("IsNew")
                         .HasColumnType("boolean");
@@ -162,22 +179,25 @@ namespace TwoHandApp.Migrations
                     b.Property<bool>("IsVip")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<DateTime?>("PremiumUntil")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("ProductType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasAnnotation("Relational:JsonPropertyName", "name");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -191,9 +211,64 @@ namespace TwoHandApp.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AdTypeId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("CityId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Ads");
+                });
+
+            modelBuilder.Entity("TwoHandApp.Models.AdImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AdId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdId");
+
+                    b.ToTable("AdImage");
+                });
+
+            modelBuilder.Entity("TwoHandApp.Models.AdType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AdType");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Business"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Personal"
+                        });
                 });
 
             modelBuilder.Entity("TwoHandApp.Models.ApplicationRole", b =>
@@ -293,6 +368,64 @@ namespace TwoHandApp.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("TwoHandApp.Models.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Category");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Electronics"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Furniture"
+                        });
+                });
+
+            modelBuilder.Entity("TwoHandApp.Models.City", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("City");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Baku"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Ganja"
+                        });
                 });
 
             modelBuilder.Entity("TwoHandApp.Models.RolePermission", b =>
@@ -410,13 +543,48 @@ namespace TwoHandApp.Migrations
 
             modelBuilder.Entity("TwoHandApp.Models.Ad", b =>
                 {
+                    b.HasOne("TwoHandApp.Models.AdType", "AdType")
+                        .WithMany("Ads")
+                        .HasForeignKey("AdTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TwoHandApp.Models.Category", "Category")
+                        .WithMany("Ads")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TwoHandApp.Models.City", "City")
+                        .WithMany("Ads")
+                        .HasForeignKey("CityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("TwoHandApp.Models.ApplicationUser", "User")
                         .WithMany("Ads")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("AdType");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("City");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TwoHandApp.Models.AdImage", b =>
+                {
+                    b.HasOne("TwoHandApp.Models.Ad", "Ad")
+                        .WithMany("Images")
+                        .HasForeignKey("AdId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ad");
                 });
 
             modelBuilder.Entity("TwoHandApp.Models.RolePermission", b =>
@@ -434,6 +602,16 @@ namespace TwoHandApp.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("TwoHandApp.Models.Ad", b =>
+                {
+                    b.Navigation("Images");
+                });
+
+            modelBuilder.Entity("TwoHandApp.Models.AdType", b =>
+                {
+                    b.Navigation("Ads");
+                });
+
             modelBuilder.Entity("TwoHandApp.Models.ApplicationRole", b =>
                 {
                     b.Navigation("Permissions");
@@ -446,6 +624,16 @@ namespace TwoHandApp.Migrations
                     b.Navigation("RolePermissions");
 
                     b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("TwoHandApp.Models.Category", b =>
+                {
+                    b.Navigation("Ads");
+                });
+
+            modelBuilder.Entity("TwoHandApp.Models.City", b =>
+                {
+                    b.Navigation("Ads");
                 });
 #pragma warning restore 612, 618
         }
