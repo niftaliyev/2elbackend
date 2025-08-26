@@ -66,7 +66,7 @@ public class AccountController : ControllerBase
 
         return Ok("Пользователь зарегистрирован");
     }
-    
+    [Authorize]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
@@ -340,8 +340,8 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
         });
     }
     
-    
-[HttpPost("{id}/buy-service")]
+    [Authorize]
+    [HttpPost("{id}/buy-service")]
     public async Task<IActionResult> BuyService(Guid id, [FromBody] PurchaseServiceDto dto)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -414,6 +414,7 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
             return StatusCode(500, ex.Message);
         }
     }
+    [Authorize]
     [HttpGet("active-ads")]
     public async Task<IActionResult> GetActiveAds()
     {
@@ -449,6 +450,7 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
 
         return Ok(active);
     }
+    [Authorize]
     [HttpGet("inactive-ads")]
     public async Task<IActionResult> GetInActiveAds()
     {
@@ -484,6 +486,7 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
 
         return Ok(inActive);
     }
+    [Authorize]
     [HttpGet("rejected-ads")]
     public async Task<IActionResult> GetRejectedAds()
     {
@@ -519,6 +522,7 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
 
         return Ok(rejected);
     }
+    [Authorize]
     [HttpGet("pending-ads")]
     public async Task<IActionResult> GetPendingAds()
     {
