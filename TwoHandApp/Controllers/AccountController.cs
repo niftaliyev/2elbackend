@@ -458,6 +458,21 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
 
         return Ok(rejected);
     }
+    [HttpGet("pending-ads")]
+    public async Task<IActionResult> GetPendingAds()
+    {
+        var user = await GetCurrentUserAsync();
+        if (user == null)
+            return Unauthorized();
+
+        var rejected = await _context.Ads
+            .Where(ad => ad.UserId == user.Id && ad.Status == AdStatus.Pending)
+            .Include(x => x.Images)
+            .OrderByDescending(ad => ad.CreatedAt)
+            .ToListAsync();
+
+        return Ok(rejected);
+    }
     private async Task<ApplicationUser?> GetCurrentUserAsync()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
