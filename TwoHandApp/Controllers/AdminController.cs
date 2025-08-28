@@ -15,13 +15,39 @@ public class AdminController(AppDbContext context, UserManager<ApplicationUser> 
     [HttpGet("pending")]
     public async Task<IActionResult> GetPendingAds()
     {
-        var approvedAds = await context.Ads
+        var now = DateTime.UtcNow;
+
+        var pendingAds = await context.Ads
             .Where(ad => ad.Status == AdStatus.Pending)
-            .Include(ad => ad.Images)
-            .OrderByDescending(ad => ad.CreatedAt)
+            .Include(x => x.Images)
+            .Select(x => new
+            {
+                x.Id,
+                x.Title,
+                x.Description,
+                Status = ((AdStatus)x.Status).ToString(),
+                x.CreatedAt,
+                Images = x.Images.Select(x => x.Url),
+                Category = x.Category.Name,
+                x.Price,
+                x.PhoneNumber,
+                x.Email,
+                IsVip = x.VipExpiresAt != null && x.VipExpiresAt > now,
+                IsPremium = x.PremiumExpiresAt != null && x.PremiumExpiresAt > now,
+                IsBoosted = x.BoostedAt != null && x.BoostedAt > DateTime.MinValue,
+                x.BoostedAt,
+                x.IsNew,
+                x.IsDeliverable,
+                x.ViewCount,
+                x.ExpiresAt,
+                City = x.City.Name,
+                AdType = x.AdType.Name,
+                x.FullName
+            })  // потом Boosted
+            .OrderBy(ad => ad.CreatedAt)                        // потом свежие
             .ToListAsync();
 
-        return Ok(approvedAds);
+        return Ok(pendingAds);
     }
     [HttpPost("approve-ad")]
     public async Task<IActionResult> Approve([FromQuery] int? id)

@@ -408,200 +408,179 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
             throw e;
         }
         
-        // decimal price;
-        // if (dto.Service.Equals("premium", StringComparison.OrdinalIgnoreCase))
-        //     price = Prices.PremiumPrice;
-        // else if (dto.Service.Equals("vip", StringComparison.OrdinalIgnoreCase))
-        //     price = Prices.VipPrice;
-        // else
-        //     return BadRequest("Unknown service");
-        //
-        // if (user.Balance < price || user.Balance is null)
-        //     return BadRequest(new { message = "Insufficient balance", balance = user.Balance });
-        //
-        // using var tx = await _context.Database.BeginTransactionAsync();
-        // try
-        // {
-        //     // проверка оптимистической конкуренции (если есть RowVersion)
-        //     // _context.Entry(user).OriginalValues["RowVersion"] = user.RowVersion;
-        //
-        //     user.Balance -= price;
-        //     if (dto.Service.Equals("premium", StringComparison.OrdinalIgnoreCase))
-        //     {
-        //         ad.PremiumExpiresAt = DateTime.UtcNow;
-        //     }
-        //     else
-        //     {
-        //         ad.VipExpiresAt = DateTime.UtcNow;
-        //     }
-        //
-        //     _context.Users.Update(user);
-        //     _context.Ads.Update(ad);
-        //
-        //     await _context.SaveChangesAsync();
-        //     await tx.CommitAsync();
-        //
-        //     var now = DateTime.UtcNow;
-        //
-        //     return Ok(new
-        //     {
-        //         message = "Service purchased",
-        //         balance = user.Balance,
-        //         adId = ad.Id,
-        //         isPremium = ad.PremiumExpiresAt != null && ad.PremiumExpiresAt > now,
-        //         isVip = ad.VipExpiresAt != null && ad.VipExpiresAt > now
-        //     });
-        // }
-        // catch (DbUpdateConcurrencyException)
-        // {
-        //     await tx.RollbackAsync();
-        //     return Conflict("Concurrency error, try again.");
-        // }
-        // catch (Exception ex)
-        // {
-        //     await tx.RollbackAsync();
-        //     return StatusCode(500, ex.Message);
-        // }
+       
         return Ok();
     }
     [Authorize]
-    [HttpGet("active-ads")]
+    [HttpGet("my-active-ads")]
     public async Task<IActionResult> GetActiveAds()
     {
         var user = await GetCurrentUserAsync();
         if (user == null)
             return Unauthorized();
 
+        var now = DateTime.UtcNow;
+
         var active = await _context.Ads
-            .Where(ad => ad.UserId == user.Id && ad.Status == AdStatus.Active)
-            .Include(ad => ad.Images)
-            .Include(ad => ad.User) // <- включаем User
-            .Select(f => new AdDto
+            .Where(ad => ad.Status == AdStatus.Active && user.Id == ad.UserId)
+            .Include(x => x.Images)
+            .Select(x => new
             {
-                Name = f.FullName,
-                Description = f.Description,
-                Price = f.Price,
-                IsNew = f.IsNew,
-                IsDeliverable = f.IsDeliverable,
-                CreatedAt = f.CreatedAt,
-                UserId = f.UserId,
-                UserFullName = f.User.FullName, // теперь безопасно
-                Images = f.Images.Select(i => new AdImageDto
-                {
-                    Id = i.Id,
-                    Url = i.Url
-                }).ToList()
+                x.Id,
+                x.Title,
+                x.Description,
+                Status = ((AdStatus)x.Status).ToString(),
+                x.CreatedAt,
+                Images = x.Images.Select(x => x.Url),
+                Category = x.Category.Name,
+                x.Price,
+                x.PhoneNumber,
+                x.Email,
+                IsVip = x.VipExpiresAt != null && x.VipExpiresAt > now,
+                IsPremium = x.PremiumExpiresAt != null && x.PremiumExpiresAt > now,
+                IsBoosted = x.BoostedAt != null && x.BoostedAt > DateTime.MinValue,
+                x.BoostedAt,
+                x.IsNew,
+                x.IsDeliverable,
+                x.ViewCount,
+                x.ExpiresAt,
+                City = x.City.Name,
+                AdType = x.AdType.Name,
+                x.FullName
             })
-            .OrderByDescending(ad => ad.CreatedAt)
+            .OrderByDescending(ad => ad.IsVip)                           // VIP сверху
+            .ThenByDescending(ad => ad.IsPremium)                        // потом Premium
+            .ThenByDescending(ad => ad.BoostedAt ?? DateTime.MinValue)   // потом Boosted
+            .ThenByDescending(ad => ad.CreatedAt)                        // потом свежие
             .ToListAsync();
-
-
 
         return Ok(active);
     }
     [Authorize]
-    [HttpGet("inactive-ads")]
+    [HttpGet("my-inactive-ads")]
     public async Task<IActionResult> GetInActiveAds()
     {
         var user = await GetCurrentUserAsync();
         if (user == null)
             return Unauthorized();
 
-        var inActive = await _context.Ads
-            .Where(ad => ad.UserId == user.Id && ad.Status == AdStatus.Inactive)
-            .Include(ad => ad.Images)
-            .Include(ad => ad.User) // <- включаем User
-            .Select(f => new AdDto
+        var now = DateTime.UtcNow;
+
+        var inactive = await _context.Ads
+            .Where(ad => ad.Status == AdStatus.Inactive && user.Id == ad.UserId)
+            .Include(x => x.Images)
+            .Select(x => new
             {
-                Name = f.FullName,
-                Description = f.Description,
-                Price = f.Price,
-                IsNew = f.IsNew,
-                IsDeliverable = f.IsDeliverable,
-                CreatedAt = f.CreatedAt,
-                UserId = f.UserId,
-                UserFullName = f.User.FullName, // теперь безопасно
-                Images = f.Images.Select(i => new AdImageDto
-                {
-                    Id = i.Id,
-                    Url = i.Url
-                }).ToList()
+                x.Id,
+                x.Title,
+                x.Description,
+                Status = ((AdStatus)x.Status).ToString(),
+                x.CreatedAt,
+                Images = x.Images.Select(x => x.Url),
+                Category = x.Category.Name,
+                x.Price,
+                x.PhoneNumber,
+                x.Email,
+                IsVip = x.VipExpiresAt != null && x.VipExpiresAt > now,
+                IsPremium = x.PremiumExpiresAt != null && x.PremiumExpiresAt > now,
+                IsBoosted = x.BoostedAt != null && x.BoostedAt > DateTime.MinValue,
+                x.BoostedAt,
+                x.IsNew,
+                x.IsDeliverable,
+                x.ViewCount,
+                x.ExpiresAt,
+                City = x.City.Name,
+                AdType = x.AdType.Name,
+                x.FullName
             })
-            .OrderByDescending(ad => ad.CreatedAt)
+            .OrderBy(ad => ad.CreatedAt)                        // потом свежие
             .ToListAsync();
 
-
-
-        return Ok(inActive);
+        return Ok(inactive);
     }
     [Authorize]
-    [HttpGet("rejected-ads")]
+    [HttpGet("my-rejected-ads")]
     public async Task<IActionResult> GetRejectedAds()
     {
         var user = await GetCurrentUserAsync();
         if (user == null)
             return Unauthorized();
 
+        var now = DateTime.UtcNow;
+
         var rejected = await _context.Ads
-            .Where(ad => ad.UserId == user.Id && ad.Status == AdStatus.Rejected)
-            .Include(ad => ad.Images)
-            .Include(ad => ad.User) // <- включаем User
-            .Select(f => new AdDto
+            .Where(ad => ad.Status == AdStatus.Rejected && user.Id == ad.UserId)
+            .Include(x => x.Images)
+            .Select(x => new
             {
-                Name = f.FullName,
-                Description = f.Description,
-                Price = f.Price,
-                IsNew = f.IsNew,
-                IsDeliverable = f.IsDeliverable,
-                CreatedAt = f.CreatedAt,
-                UserId = f.UserId,
-                UserFullName = f.User.FullName, // теперь безопасно
-                Images = f.Images.Select(i => new AdImageDto
-                {
-                    Id = i.Id,
-                    Url = i.Url
-                }).ToList()
+                x.Id,
+                x.Title,
+                x.Description,
+                Status = ((AdStatus)x.Status).ToString(),
+                x.CreatedAt,
+                Images = x.Images.Select(x => x.Url),
+                Category = x.Category.Name,
+                x.Price,
+                x.PhoneNumber,
+                x.Email,
+                IsVip = x.VipExpiresAt != null && x.VipExpiresAt > now,
+                IsPremium = x.PremiumExpiresAt != null && x.PremiumExpiresAt > now,
+                IsBoosted = x.BoostedAt != null && x.BoostedAt > DateTime.MinValue,
+                x.BoostedAt,
+                x.IsNew,
+                x.IsDeliverable,
+                x.ViewCount,
+                x.ExpiresAt,
+                City = x.City.Name,
+                AdType = x.AdType.Name,
+                x.FullName
             })
-            .OrderByDescending(ad => ad.CreatedAt)
+            .OrderBy(ad => ad.CreatedAt)                        // потом свежие
             .ToListAsync();
-
-
 
         return Ok(rejected);
     }
     [Authorize]
-    [HttpGet("pending-ads")]
+    [HttpGet("my-pending-ads")]
     public async Task<IActionResult> GetPendingAds()
     {
         var user = await GetCurrentUserAsync();
         if (user == null)
             return Unauthorized();
 
-        var rejected = await _context.Ads
-            .Where(ad => ad.UserId == user.Id && ad.Status == AdStatus.Pending)
-            .Include(ad => ad.Images)
-            .Include(ad => ad.User) // <- включаем User
-            .Select(f => new AdDto
+        var now = DateTime.UtcNow;
+
+        var pending = await _context.Ads
+            .Where(ad => ad.Status == AdStatus.Pending && user.Id == ad.UserId)
+            .Include(x => x.Images)
+            .Select(x => new
             {
-                Name = f.FullName,
-                Description = f.Description,
-                Price = f.Price,
-                IsNew = f.IsNew,
-                IsDeliverable = f.IsDeliverable,
-                CreatedAt = f.CreatedAt,
-                UserId = f.UserId,
-                UserFullName = f.User.FullName, // теперь безопасно
-                Images = f.Images.Select(i => new AdImageDto
-                {
-                    Id = i.Id,
-                    Url = i.Url
-                }).ToList()
+                x.Id,
+                x.Title,
+                x.Description,
+                Status = ((AdStatus)x.Status).ToString(),
+                x.CreatedAt,
+                Images = x.Images.Select(x => x.Url),
+                Category = x.Category.Name,
+                x.Price,
+                x.PhoneNumber,
+                x.Email,
+                IsVip = x.VipExpiresAt != null && x.VipExpiresAt > now,
+                IsPremium = x.PremiumExpiresAt != null && x.PremiumExpiresAt > now,
+                IsBoosted = x.BoostedAt != null && x.BoostedAt > DateTime.MinValue,
+                x.BoostedAt,
+                x.IsNew,
+                x.IsDeliverable,
+                x.ViewCount,
+                x.ExpiresAt,
+                City = x.City.Name,
+                AdType = x.AdType.Name,
+                x.FullName
             })
-            .OrderByDescending(ad => ad.CreatedAt)
+            .OrderBy(ad => ad.CreatedAt)                        // потом свежие
             .ToListAsync();
 
-
-        return Ok(rejected);
+        return Ok(pending);
     }
     private async Task<ApplicationUser?> GetCurrentUserAsync()
     {
