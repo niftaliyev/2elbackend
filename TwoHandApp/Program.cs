@@ -6,6 +6,7 @@ using TwoHandApp;
 using TwoHandApp.Enums;
 using TwoHandApp.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using TwoHandApp.BackgroundServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,7 @@ builder.Services.AddAuthorization(options =>
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHostedService<AdBoostService>();
 
 builder.Services.AddSwaggerGen(c =>
 {

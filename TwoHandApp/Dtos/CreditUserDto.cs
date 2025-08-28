@@ -8,5 +8,6 @@ public class CreditUserDto
 
 public class PurchaseServiceDto
 {
-    public string Service { get; set; } = default!; // "premium" или "vip"
+    public string priceid { get; set; } = default!;
+
 }

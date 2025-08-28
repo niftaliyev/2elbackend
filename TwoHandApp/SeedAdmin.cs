@@ -14,7 +14,7 @@ public static class SeedAdmin
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        const string adminEmail = "admin";
+        const string adminEmail = "admin@mail.ru";
         const string adminPassword = "123456";
         const string adminRoleName = "SuperAdmin";
 

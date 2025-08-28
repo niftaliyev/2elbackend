@@ -15,6 +15,10 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     {
         base.OnModelCreating(builder);
 
+        builder.Entity<Ad>()
+            .Property(a => a.Id)
+            .ValueGeneratedOnAdd();
+        
         builder.Entity<RolePermission>().Property(p => p.Permission)
             .HasConversion<string>();
 
@@ -68,7 +72,10 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
             new AdType { Id = 1, Name = "Business" },
             new AdType { Id = 2, Name = "Personal" }
         );
-
+        builder.Entity<AdPackage>().HasData(
+            new AdType { Id = 1, Name = "Vip" },
+            new AdType { Id = 2, Name = "Premium" }
+        );
         builder.Entity<Category>().HasData(
             new Category { Id = 1, Name = "Electronics" },
             new Category { Id = 2, Name = "Furniture" }
@@ -79,6 +86,17 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
             new City { Id = 2, Name = "Ganja" }
         );
         
+        // 🔹 Ad ↔ UserAdPackage (один Ad может иметь много покупок)
+        builder.Entity<UserAdPackage>()
+            .HasOne(uap => uap.Ad)
+            .WithMany() // можно сделать .WithMany(a => a.Packages) если хочешь связь из Ad
+            .HasForeignKey(uap => uap.AdId);
+
+        // 🔹 PackagePrice ↔ UserAdPackage (один тариф может быть у многих покупок)
+        builder.Entity<UserAdPackage>()
+            .HasOne(uap => uap.PackagePrice)
+            .WithMany()
+            .HasForeignKey(uap => uap.PackagePriceId);
     }
 
     public DbSet<Ad> Ads { get; set; } = default!;
@@ -86,8 +104,9 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<Category> Categories { get; set; } = default!;
     public DbSet<City> Cities { get; set; } = default!;
     public DbSet<AdType> AdTypes { get; set; } = default!;
+    public DbSet<AdPackage> AdPackages { get; set; } = default!;
     public DbSet<UserRefreshToken> UserRefreshTokens { get; set; } = default!;
     public DbSet<FavouriteAd> FavouriteAds { get; set; } = default!;
-
-
+    public DbSet<PackagePrice> PackagePrices { get; set; }
+    public DbSet<UserAdPackage> UserAdPackages { get; set; }
 }

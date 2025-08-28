@@ -9,7 +9,7 @@ public class FavouriteAd
     public ApplicationUser User { get; set; } = default!;
 
     // Какое объявление добавлено
-    public Guid AdId { get; set; }
+    public int AdId { get; set; }
     public Ad Ad { get; set; } = default!;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

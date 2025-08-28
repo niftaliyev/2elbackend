@@ -24,12 +24,12 @@ public class AdminController(AppDbContext context, UserManager<ApplicationUser> 
         return Ok(approvedAds);
     }
     [HttpPost("approve-ad")]
-    public async Task<IActionResult> Approve([FromQuery] string id)
+    public async Task<IActionResult> Approve([FromQuery] int? id)
     {
-        if (!Guid.TryParse(id, out var adId))
+        if (id == null || id < 1)
             return BadRequest("Invalid ad ID format.");
 
-        var ad = await context.Ads.FirstOrDefaultAsync(x => x.Id == adId);
+        var ad = await context.Ads.FirstOrDefaultAsync(x => x.Id == id);
 
         if (ad == null)
             return NotFound("Ad not found.");
@@ -40,6 +40,20 @@ public class AdminController(AppDbContext context, UserManager<ApplicationUser> 
 
         return Ok(new { message = "Ad approved successfully." });
 
+    }
+
+    [HttpGet("boosted-ads")]
+    public async Task<IActionResult> BoostedAds(CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+
+        var boosts = await context.UserAdPackages
+            .Include(b => b.Ad)
+            .Include(b => b.PackagePrice)
+            .Where(b => b.BoostsRemaining > 0 && b.EndDate > now)
+            .Where(b => b.LastBoostedAt <= now.AddHours(b.PackagePrice.IntervalHours ?? 1))
+            .ToListAsync(cancellationToken);
+        return Ok(boosts);
     }
     [HttpPost("users/credit")]
     public async Task<IActionResult> CreditUser([FromBody] CreditUserDto dto)

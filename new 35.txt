@@ -1,0 +1,100 @@
+[
+  {
+    "id": 1,
+    "IntervalDay": 1,
+    "IntervalHours": 1,
+    "BoostCount": 1,
+	"Price": 3,
+	"Type": "vip",
+	"Name": "1 manat 1 gün"
+  },
+  {
+    "id": 2,
+    "IntervalDay": 1,
+    "IntervalHours": 1,
+	"BoostCount": 1,
+	"Price": 8,
+	"Type": "vip",
+	"Name": "1 manat 1 gün"
+  },
+    {
+    "id":3,
+    "IntervalDay": 1,
+    "IntervalHours": 1,
+	"BoostCount": 1,
+	"Price": 2,
+	"Type": "premium",
+	"Name": "1 manat 1 gün"
+  },
+  {
+    "id": 4,
+    "IntervalDay": 1,
+    "IntervalHours": 1,
+	"BoostCount": 1,
+	"Price": 7,
+	"Type": "premium",
+	"Name": "1 manat 1 gün"
+  },
+  {
+    "id": 4,
+    "IntervalDay": 1,
+    "IntervalHours": 1,
+	"BoostCount": 5,
+	"Price": 7,
+	"Type": "boost",
+	"Name": "1 manat 1 gün"
+  }
+]
+
+
+[
+   "BoostPackageId": 23241,
+   "AdId": 23241,
+   "BoostsRemaining": 4,
+   "LastBoostedAt": 8/28/2025 11:05,
+   "StartDate ": 8/28/2025 03:00,
+   "EndDate": 10/28/2025 03:00,
+]
+
+    // выбираем активные boost
+        var boosts = await db.AdBoosts
+            .Include(b => b.Ad)
+            .Include(b => b.BoostPackage)
+            .Where(b => b.BoostsRemaining > 0 && b.EndDate > now)
+            .Where(b => b.LastBoostedAt <= now.AddHours(-b.BoostPackage.IntervalHours))
+            .ToListAsync(stoppingToken);
+
+        foreach (var boost in boosts)
+        {
+            // поднимаем объявление
+            boost.Ad.BoostedAt = now;
+
+            // уменьшаем счетчик
+            boost.BoostsRemaining--;
+
+            // фиксируем последнее поднятие
+            boost.LastBoostedAt = now;
+        }
+		
+		    public DateTime? BoostedAt { get; set; }     // дата последнего "поднятия"
+
+
+var now = DateTime.UtcNow;
+
+var ads = await _context.Ads
+    .Where(ad => ad.Status == AdStatus.Active && ad.ExpiresAt > now)
+    .Select(ad => new
+    {
+        ad.Id,
+        ad.Title,
+        IsVip = ad.VipExpiresAt != null && ad.VipExpiresAt > now,
+        IsPremium = ad.PremiumExpiresAt != null && ad.PremiumExpiresAt > now,
+        IsBoosted = ad.BoostedAt != null && ad.BoostedAt > DateTime.MinValue,
+        ad.CreatedAt,
+        ad.BoostedAt
+    })
+    .OrderByDescending(ad => ad.IsVip)                           // VIP сверху
+    .ThenByDescending(ad => ad.IsPremium)                        // потом Premium
+    .ThenByDescending(ad => ad.BoostedAt ?? DateTime.MinValue)   // потом Boosted
+    .ThenByDescending(ad => ad.CreatedAt)                        // потом свежие
+    .ToListAsync();

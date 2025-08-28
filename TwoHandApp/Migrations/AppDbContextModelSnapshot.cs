@@ -135,12 +135,20 @@ namespace TwoHandApp.Migrations
 
             modelBuilder.Entity("TwoHandApp.Models.Ad", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AdPackageId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("AdTypeId")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime?>("BoostedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("integer");
@@ -161,6 +169,9 @@ namespace TwoHandApp.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -173,18 +184,12 @@ namespace TwoHandApp.Migrations
                     b.Property<bool>("IsNew")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsPremium")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsVip")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<DateTime?>("PremiumUntil")
+                    b.Property<DateTime?>("PremiumExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal>("Price")
@@ -206,10 +211,12 @@ namespace TwoHandApp.Migrations
                     b.Property<int>("ViewCount")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("VipUntil")
+                    b.Property<DateTime?>("VipExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AdPackageId");
 
                     b.HasIndex("AdTypeId");
 
@@ -228,8 +235,8 @@ namespace TwoHandApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("AdId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("AdId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Url")
                         .IsRequired()
@@ -240,6 +247,35 @@ namespace TwoHandApp.Migrations
                     b.HasIndex("AdId");
 
                     b.ToTable("AdImages");
+                });
+
+            modelBuilder.Entity("TwoHandApp.Models.AdPackage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AdPackages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Vip"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Premium"
+                        });
                 });
 
             modelBuilder.Entity("TwoHandApp.Models.AdType", b =>
@@ -434,8 +470,8 @@ namespace TwoHandApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("AdId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("AdId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -451,6 +487,36 @@ namespace TwoHandApp.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("FavouriteAds");
+                });
+
+            modelBuilder.Entity("TwoHandApp.Models.PackagePrice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("BoostCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("IntervalDay")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("IntervalHours")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PackageType")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PackagePrices");
                 });
 
             modelBuilder.Entity("TwoHandApp.Models.RolePermission", b =>
@@ -479,6 +545,45 @@ namespace TwoHandApp.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("RolePermissions");
+                });
+
+            modelBuilder.Entity("TwoHandApp.Models.UserAdPackage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AdId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("BoostsRemaining")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("LastBoostedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PackagePriceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("PaidPrice")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdId");
+
+                    b.HasIndex("PackagePriceId");
+
+                    b.ToTable("UserAdPackages");
                 });
 
             modelBuilder.Entity("TwoHandApp.Models.UserRefreshToken", b =>
@@ -568,6 +673,10 @@ namespace TwoHandApp.Migrations
 
             modelBuilder.Entity("TwoHandApp.Models.Ad", b =>
                 {
+                    b.HasOne("TwoHandApp.Models.AdPackage", null)
+                        .WithMany("Ads")
+                        .HasForeignKey("AdPackageId");
+
                     b.HasOne("TwoHandApp.Models.AdType", "AdType")
                         .WithMany("Ads")
                         .HasForeignKey("AdTypeId")
@@ -646,11 +755,35 @@ namespace TwoHandApp.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("TwoHandApp.Models.UserAdPackage", b =>
+                {
+                    b.HasOne("TwoHandApp.Models.Ad", "Ad")
+                        .WithMany()
+                        .HasForeignKey("AdId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TwoHandApp.Models.PackagePrice", "PackagePrice")
+                        .WithMany()
+                        .HasForeignKey("PackagePriceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ad");
+
+                    b.Navigation("PackagePrice");
+                });
+
             modelBuilder.Entity("TwoHandApp.Models.Ad", b =>
                 {
                     b.Navigation("Favourites");
 
                     b.Navigation("Images");
+                });
+
+            modelBuilder.Entity("TwoHandApp.Models.AdPackage", b =>
+                {
+                    b.Navigation("Ads");
                 });
 
             modelBuilder.Entity("TwoHandApp.Models.AdType", b =>

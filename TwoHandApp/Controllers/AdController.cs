@@ -18,10 +18,32 @@ public class AdController(AppDbContext context, UserManager<ApplicationUser> use
     [HttpGet("approved-ads")]
     public async Task<IActionResult> GetApprovedAds()
     {
+        var now = DateTime.UtcNow;
+
         var approvedAds = await context.Ads
-            .Where(ad => ad.Status == AdStatus.Active)
+            .Where(ad => ad.Status == AdStatus.Active && ad.ExpiresAt > now)
             .Include(x => x.Images)
-            .OrderByDescending(ad => ad.CreatedAt)
+            .Select(x => new
+            {
+                x.Id,
+                x.Title,
+                x.Description,
+                x.Status,
+                x.CreatedAt,
+                x.Images,
+                x.Category,
+                x.Price,
+                x.PhoneNumber,
+                x.Email,
+                IsVip = x.VipExpiresAt != null && x.VipExpiresAt > now,
+                IsPremium = x.PremiumExpiresAt != null && x.PremiumExpiresAt > now,
+                IsBoosted = x.BoostedAt != null && x.BoostedAt > DateTime.MinValue,
+                x.BoostedAt
+            })
+            .OrderByDescending(ad => ad.IsVip)                           // VIP сверху
+            .ThenByDescending(ad => ad.IsPremium)                        // потом Premium
+            .ThenByDescending(ad => ad.BoostedAt ?? DateTime.MinValue)   // потом Boosted
+            .ThenByDescending(ad => ad.CreatedAt)                        // потом свежие
             .ToListAsync();
 
         return Ok(approvedAds);
@@ -40,7 +62,6 @@ public class AdController(AppDbContext context, UserManager<ApplicationUser> use
 
         var ad = new Ad
         {
-            Id = Guid.NewGuid(),
             Title = dto.Title,
             Description = dto.Description,
             Price = dto.Price,
@@ -55,7 +76,8 @@ public class AdController(AppDbContext context, UserManager<ApplicationUser> use
             AdTypeId = dto.AdTypeId,
             FullName = dto.FullName,
             PhoneNumber = dto.PhoneNumber,
-            Email = dto.Email
+            Email = dto.Email,
+            BoostedAt = null
         };
 
         // Сохраняем файлы

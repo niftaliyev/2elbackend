@@ -342,77 +342,127 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
     
     [Authorize]
     [HttpPost("{id}/buy-service")]
-    public async Task<IActionResult> BuyService(Guid id, [FromBody] PurchaseServiceDto dto)
+    public async Task<IActionResult> BuyService(int? id, [FromBody] PurchaseServiceDto dto)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null) return Unauthorized();
 
         var ad = await _context.Ads.Include(a => a.User).FirstOrDefaultAsync(a => a.Id == id);
+        var packagePrice = await _context.PackagePrices.FirstOrDefaultAsync(a => a.Id == Guid.Parse(dto.priceid));
         if (ad == null) return NotFound("Ad not found.");
         if (ad.UserId != userId) return Forbid();
 
         var user = ad.User; // уже загружен при Include
-
-        decimal price;
-        if (dto.Service.Equals("premium", StringComparison.OrdinalIgnoreCase))
-            price = Prices.PremiumPrice;
-        else if (dto.Service.Equals("vip", StringComparison.OrdinalIgnoreCase))
-            price = Prices.VipPrice;
-        else
-            return BadRequest("Unknown service");
-
-        if (user.Balance < price || user.Balance is null)
+        if (user.Balance < packagePrice.Price || user.Balance is null)
             return BadRequest(new { message = "Insufficient balance", balance = user.Balance });
-
+        
         using var tx = await _context.Database.BeginTransactionAsync();
         try
         {
-            // проверка оптимистической конкуренции (если есть RowVersion)
-            // _context.Entry(user).OriginalValues["RowVersion"] = user.RowVersion;
-
-            user.Balance -= price;
-            if (dto.Service.Equals("premium", StringComparison.OrdinalIgnoreCase))
+            switch ((PackageType)packagePrice.PackageType)
             {
-                ad.IsPremium = true;
-                ad.PremiumUntil = (ad.PremiumUntil ?? DateTime.UtcNow) > DateTime.UtcNow
-                    ? ad.PremiumUntil.Value.Add(Prices.PremiumDuration)
-                    : DateTime.UtcNow.Add(Prices.PremiumDuration);
+                case PackageType.Vip:
+                    user.Balance -= packagePrice.Price;
+                    ad.VipExpiresAt = DateTime.UtcNow.AddDays(packagePrice.IntervalDay ?? 1);
+                    _context.Users.Update(user);
+                    _context.Ads.Update(ad);
+                
+                    await _context.SaveChangesAsync();
+                    await tx.CommitAsync();
+                    break;
+                case PackageType.Premium:
+                    user.Balance -= packagePrice.Price;
+                    ad.PremiumExpiresAt = DateTime.UtcNow.AddDays(packagePrice.IntervalDay ?? 1);
+                    _context.Users.Update(user);
+                    _context.Ads.Update(ad);
+                
+                    await _context.SaveChangesAsync();
+                    await tx.CommitAsync();
+                    break;
+                case PackageType.Boost:
+                    UserAdPackage userAdPackage= new UserAdPackage();
+                    userAdPackage.Id = Guid.NewGuid();
+                    userAdPackage.AdId = ad.Id;
+                    userAdPackage.PackagePriceId = packagePrice.Id;
+                    userAdPackage.StartDate = DateTime.UtcNow;
+                    userAdPackage.BoostsRemaining = packagePrice.BoostCount;
+                    userAdPackage.LastBoostedAt = DateTime.UtcNow;
+                    userAdPackage.Type = PackageType.Boost;
+                    userAdPackage.EndDate = DateTime.UtcNow.AddHours(packagePrice.IntervalHours ?? 1);
+                    
+                    
+                    ad.BoostedAt = DateTime.UtcNow;
+                    _context.Ads.Update(ad);
+                    _context.Users.Update(user);
+                    _context.UserAdPackages.Add(userAdPackage);
+                    await _context.SaveChangesAsync();
+                    await tx.CommitAsync();
+                    break;
+                
+    
             }
-            else
-            {
-                ad.IsVip = true;
-                ad.VipUntil = (ad.VipUntil ?? DateTime.UtcNow) > DateTime.UtcNow
-                    ? ad.VipUntil.Value.Add(Prices.VipDuration)
-                    : DateTime.UtcNow.Add(Prices.VipDuration);
-            }
-
-            _context.Users.Update(user);
-            _context.Ads.Update(ad);
-
-            await _context.SaveChangesAsync();
-            await tx.CommitAsync();
-
-            return Ok(new
-            {
-                message = "Service purchased",
-                balance = user.Balance,
-                adId = ad.Id,
-                isPremium = ad.IsPremium,
-                isVip = ad.IsVip,
-                premiumUntil = ad.PremiumUntil,
-                vipUntil = ad.VipUntil
-            });
         }
-        catch (DbUpdateConcurrencyException)
+        catch (Exception e)
         {
             await tx.RollbackAsync();
-            return Conflict("Concurrency error, try again.");
+            throw e;
         }
-        catch (Exception ex)
-        {
-            await tx.RollbackAsync();
-            return StatusCode(500, ex.Message);
-        }
+        
+        // decimal price;
+        // if (dto.Service.Equals("premium", StringComparison.OrdinalIgnoreCase))
+        //     price = Prices.PremiumPrice;
+        // else if (dto.Service.Equals("vip", StringComparison.OrdinalIgnoreCase))
+        //     price = Prices.VipPrice;
+        // else
+        //     return BadRequest("Unknown service");
+        //
+        // if (user.Balance < price || user.Balance is null)
+        //     return BadRequest(new { message = "Insufficient balance", balance = user.Balance });
+        //
+        // using var tx = await _context.Database.BeginTransactionAsync();
+        // try
+        // {
+        //     // проверка оптимистической конкуренции (если есть RowVersion)
+        //     // _context.Entry(user).OriginalValues["RowVersion"] = user.RowVersion;
+        //
+        //     user.Balance -= price;
+        //     if (dto.Service.Equals("premium", StringComparison.OrdinalIgnoreCase))
+        //     {
+        //         ad.PremiumExpiresAt = DateTime.UtcNow;
+        //     }
+        //     else
+        //     {
+        //         ad.VipExpiresAt = DateTime.UtcNow;
+        //     }
+        //
+        //     _context.Users.Update(user);
+        //     _context.Ads.Update(ad);
+        //
+        //     await _context.SaveChangesAsync();
+        //     await tx.CommitAsync();
+        //
+        //     var now = DateTime.UtcNow;
+        //
+        //     return Ok(new
+        //     {
+        //         message = "Service purchased",
+        //         balance = user.Balance,
+        //         adId = ad.Id,
+        //         isPremium = ad.PremiumExpiresAt != null && ad.PremiumExpiresAt > now,
+        //         isVip = ad.VipExpiresAt != null && ad.VipExpiresAt > now
+        //     });
+        // }
+        // catch (DbUpdateConcurrencyException)
+        // {
+        //     await tx.RollbackAsync();
+        //     return Conflict("Concurrency error, try again.");
+        // }
+        // catch (Exception ex)
+        // {
+        //     await tx.RollbackAsync();
+        //     return StatusCode(500, ex.Message);
+        // }
+        return Ok();
     }
     [Authorize]
     [HttpGet("active-ads")]
@@ -428,7 +478,6 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
             .Include(ad => ad.User) // <- включаем User
             .Select(f => new AdDto
             {
-                Id = f.Id,
                 Name = f.FullName,
                 Description = f.Description,
                 Price = f.Price,
@@ -464,7 +513,6 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
             .Include(ad => ad.User) // <- включаем User
             .Select(f => new AdDto
             {
-                Id = f.Id,
                 Name = f.FullName,
                 Description = f.Description,
                 Price = f.Price,
@@ -500,7 +548,6 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
             .Include(ad => ad.User) // <- включаем User
             .Select(f => new AdDto
             {
-                Id = f.Id,
                 Name = f.FullName,
                 Description = f.Description,
                 Price = f.Price,
@@ -536,7 +583,6 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
             .Include(ad => ad.User) // <- включаем User
             .Select(f => new AdDto
             {
-                Id = f.Id,
                 Name = f.FullName,
                 Description = f.Description,
                 Price = f.Price,
