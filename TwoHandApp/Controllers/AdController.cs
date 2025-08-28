@@ -28,17 +28,24 @@ public class AdController(AppDbContext context, UserManager<ApplicationUser> use
                 x.Id,
                 x.Title,
                 x.Description,
-                x.Status,
+                Status = ((AdStatus)x.Status).ToString(),
                 x.CreatedAt,
-                x.Images,
-                x.Category,
+                Images = x.Images.Select(x => x.Url),
+                Category = x.Category.Name,
                 x.Price,
                 x.PhoneNumber,
                 x.Email,
                 IsVip = x.VipExpiresAt != null && x.VipExpiresAt > now,
                 IsPremium = x.PremiumExpiresAt != null && x.PremiumExpiresAt > now,
                 IsBoosted = x.BoostedAt != null && x.BoostedAt > DateTime.MinValue,
-                x.BoostedAt
+                x.BoostedAt,
+                x.IsNew,
+                x.IsDeliverable,
+                x.ViewCount,
+                x.ExpiresAt,
+                City = x.City.Name,
+                AdType = x.AdType.Name,
+                x.FullName
             })
             .OrderByDescending(ad => ad.IsVip)                           // VIP сверху
             .ThenByDescending(ad => ad.IsPremium)                        // потом Premium
