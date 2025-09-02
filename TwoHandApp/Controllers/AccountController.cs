@@ -540,6 +540,7 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
 
         return Ok(rejected);
     }
+    
     [Authorize]
     [HttpGet("my-pending-ads")]
     public async Task<IActionResult> GetPendingAds()

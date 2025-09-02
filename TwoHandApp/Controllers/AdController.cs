@@ -56,6 +56,80 @@ public class AdController(AppDbContext context, UserManager<ApplicationUser> use
         return Ok(approvedAds);
     }
 
+[Authorize(AuthenticationSchemes = "JwtBearer")]
+[Authorize(Policy = "Permission.Ads_Update")]
+[HttpPut("ads/{id}")]
+public async Task<IActionResult> UpdateAd(int id, [FromForm] UpdateAdDto dto)
+{
+    var user = await GetCurrentUserAsync();
+    if (user == null)
+        return Unauthorized();
+
+    var ad = await context.Ads
+        .Include(a => a.Images)
+        .FirstOrDefaultAsync(a => a.Id == id);
+
+    if (ad == null)
+        return NotFound();
+
+    if (ad.UserId != user.Id)
+        return Forbid();
+
+    // Обновляем поля
+    ad.Title = dto.Title;
+    ad.Description = dto.Description;
+    ad.Price = dto.Price;
+    ad.IsNew = dto.IsNew;
+    ad.IsDeliverable = dto.IsDeliverable;
+    ad.CategoryId = dto.CategoryId;
+    ad.CityId = dto.CityId;
+    ad.AdTypeId = dto.AdTypeId;
+    ad.FullName = dto.FullName;
+    ad.PhoneNumber = dto.PhoneNumber;
+    ad.Email = dto.Email;
+    ad.Status = AdStatus.Pending; // сбрасываем на модерацию после изменений
+
+    // Обновление изображений (если переданы)
+    if (dto.Images != null && dto.Images.Count > 0)
+    {
+        // Удаляем старые изображения
+        foreach (var image in ad.Images)
+        {
+            var filePath = Path.Combine("wwwroot", image.Url.TrimStart('/'));
+            if (System.IO.File.Exists(filePath))
+                System.IO.File.Delete(filePath);
+        }
+        ad.Images.Clear();
+
+        // Добавляем новые изображения
+        foreach (var file in dto.Images)
+        {
+            if (file.Length > 0)
+            {
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                var filePath = Path.Combine("wwwroot/uploads/ads", fileName);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                ad.Images.Add(new AdImage
+                {
+                    Id = Guid.NewGuid(),
+                    Url = $"/uploads/ads/{fileName}",
+                    AdId = ad.Id
+                });
+            }
+        }
+    }
+
+    await context.SaveChangesAsync();
+
+    return Ok(new { message = "Elan yeniləndi", ad.Id });
+}
 
 
     [Authorize(AuthenticationSchemes = "JwtBearer")]
