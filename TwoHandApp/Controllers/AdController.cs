@@ -81,18 +81,22 @@ public async Task<IActionResult> UpdateAd(int id, [FromForm] UpdateAdDto dto)
     if (dto.Price.HasValue)
         ad.Price = dto.Price.Value;
 
-
+    if (dto.CategoryId.HasValue)
+        ad.CategoryId = dto.CategoryId.Value;
+    if (dto.CityId.HasValue)
+        ad.CityId = dto.CityId.Value;
+    if (dto.AdTypeId.HasValue)
+        ad.AdTypeId = dto.AdTypeId.Value;
+    
     ad.IsNew = dto.IsNew ?? ad.IsNew;
     ad.IsDeliverable = dto.IsDeliverable ?? ad.IsDeliverable;
-
-    ad.CategoryId = dto.CategoryId ?? ad.CategoryId;
-    ad.CityId = dto.CityId ?? ad.CityId;
-    ad.AdTypeId = dto.AdTypeId ?? ad.AdTypeId;
+    
 
     ad.FullName = string.IsNullOrWhiteSpace(dto.FullName) ? ad.FullName : dto.FullName;
     ad.PhoneNumber = string.IsNullOrWhiteSpace(dto.PhoneNumber) ? ad.PhoneNumber : dto.PhoneNumber;
     ad.Email = string.IsNullOrWhiteSpace(dto.Email) ? ad.Email : dto.Email;
-
+    ad.Status = AdStatus.Pending;
+    
     // Обновление изображений (если переданы)
     if (dto.Images != null && dto.Images.Count > 0)
     {
