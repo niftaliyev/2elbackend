@@ -115,7 +115,7 @@ public async Task<IActionResult> UpdateAd(int id, [FromForm] UpdateAdDto dto)
 
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                await using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
                 }
@@ -132,7 +132,7 @@ public async Task<IActionResult> UpdateAd(int id, [FromForm] UpdateAdDto dto)
 
     await context.SaveChangesAsync();
 
-    return Ok(new { message = "Elan yeniləndi", ad.Id });
+    return Ok(new { message = "Elan moderatorlar terefinden yoxlanib yeniden derc olunacaq", ad.Id });
 }
 
 
