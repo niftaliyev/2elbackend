@@ -57,7 +57,7 @@ public class AdController(AppDbContext context, UserManager<ApplicationUser> use
     }
 
 [Authorize(AuthenticationSchemes = "JwtBearer")]
-[HttpPut("ads/{id}")]
+[HttpPut("{id}")]
 public async Task<IActionResult> UpdateAd(int id, [FromForm] UpdateAdDto dto)
 {
     var user = await GetCurrentUserAsync();
