@@ -57,7 +57,6 @@ public class AdController(AppDbContext context, UserManager<ApplicationUser> use
     }
 
 [Authorize(AuthenticationSchemes = "JwtBearer")]
-[Authorize(Policy = "Permission.Ads_Update")]
 [HttpPut("ads/{id}")]
 public async Task<IActionResult> UpdateAd(int id, [FromForm] UpdateAdDto dto)
 {
@@ -76,8 +75,8 @@ public async Task<IActionResult> UpdateAd(int id, [FromForm] UpdateAdDto dto)
         return Forbid();
 
     // Обновляем поля
-    ad.Title = dto.Title;
-    ad.Description = dto.Description;
+    ad.Title = dto.Title ?? dto.Title;
+    ad.Description = dto.Description ?? dto.Description;
     ad.Price = dto.Price;
     ad.IsNew = dto.IsNew;
     ad.IsDeliverable = dto.IsDeliverable;
