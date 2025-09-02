@@ -75,18 +75,23 @@ public async Task<IActionResult> UpdateAd(int id, [FromForm] UpdateAdDto dto)
         return Forbid();
 
     // Обновляем поля
-    ad.Title = dto.Title ?? dto.Title;
-    ad.Description = dto.Description ?? dto.Description;
-    ad.Price = dto.Price;
-    ad.IsNew = dto.IsNew;
-    ad.IsDeliverable = dto.IsDeliverable;
-    ad.CategoryId = dto.CategoryId;
-    ad.CityId = dto.CityId;
-    ad.AdTypeId = dto.AdTypeId;
-    ad.FullName = dto.FullName;
-    ad.PhoneNumber = dto.PhoneNumber;
-    ad.Email = dto.Email;
-    ad.Status = AdStatus.Pending; // сбрасываем на модерацию после изменений
+    ad.Title = string.IsNullOrWhiteSpace(dto.Title) ? ad.Title : dto.Title;
+    ad.Description = string.IsNullOrWhiteSpace(dto.Description) ? ad.Description : dto.Description;
+
+    if (dto.Price.HasValue)
+        ad.Price = dto.Price.Value;
+
+
+    ad.IsNew = dto.IsNew ?? ad.IsNew;
+    ad.IsDeliverable = dto.IsDeliverable ?? ad.IsDeliverable;
+
+    ad.CategoryId = dto.CategoryId ?? ad.CategoryId;
+    ad.CityId = dto.CityId ?? ad.CityId;
+    ad.AdTypeId = dto.AdTypeId ?? ad.AdTypeId;
+
+    ad.FullName = string.IsNullOrWhiteSpace(dto.FullName) ? ad.FullName : dto.FullName;
+    ad.PhoneNumber = string.IsNullOrWhiteSpace(dto.PhoneNumber) ? ad.PhoneNumber : dto.PhoneNumber;
+    ad.Email = string.IsNullOrWhiteSpace(dto.Email) ? ad.Email : dto.Email;
 
     // Обновление изображений (если переданы)
     if (dto.Images != null && dto.Images.Count > 0)
