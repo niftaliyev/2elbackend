@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TwoHandApp.Models;
+using TwoHandApp.Models.Filters;
+using TwoHandApp.Models.Pagination;
 
 namespace TwoHandApp.Controllers;
 
@@ -66,8 +68,8 @@ public class FavouritesController : ControllerBase
     }
 
     // Получить все избранные объявления пользователя
-    [HttpGet]
-    public async Task<IActionResult> GetFavourites()
+    [HttpPost]
+    public async Task<IActionResult> GetFavourites(SearchParams<AdFilter> searchParams,CancellationToken cancellationToken)
     {
         var user = await GetCurrentUserAsync();
         if (user == null) return Unauthorized();
@@ -86,6 +88,8 @@ public class FavouritesController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(favourites);
+        var result = favourites.ApplySorting(searchParams.Sort.Select(x => (x.field, x.order)).ToList())
+            .Pagination(searchParams.PageNumber, searchParams.PageSize).Select(x => x);
+        return Ok(result);
     }
 }

@@ -8,6 +8,8 @@ using TwoHandApp.Dtos;
 using TwoHandApp.Enums;
 using TwoHandApp.Helpers;
 using TwoHandApp.Models;
+using TwoHandApp.Models.Filters;
+using TwoHandApp.Models.Pagination;
 
 namespace TwoHandApp.Controllers;
 
@@ -15,8 +17,8 @@ namespace TwoHandApp.Controllers;
 [ApiController]
 public class AdController(AppDbContext context, UserManager<ApplicationUser> userManager) : ControllerBase
 {
-    [HttpGet("approved-ads")]
-    public async Task<IActionResult> GetApprovedAds()
+    [HttpPost("approved-ads")]
+    public async Task<ResponsePaginationModel<IEnumerable<dynamic>>> GetApprovedAds(SearchParams<AdFilter> searchParams,CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
 
@@ -51,9 +53,23 @@ public class AdController(AppDbContext context, UserManager<ApplicationUser> use
             .ThenByDescending(ad => ad.IsPremium)                        // потом Premium
             .ThenByDescending(ad => ad.BoostedAt ?? DateTime.MinValue)   // потом Boosted
             .ThenByDescending(ad => ad.CreatedAt)                        // потом свежие
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
-        return Ok(approvedAds);
+        var result = approvedAds.ApplySorting(searchParams.Sort.Select(x => (x.field, x.order)).ToList())
+                                                    .Pagination(searchParams.PageNumber, searchParams.PageSize).Select(x => x);
+
+
+        var pagedList = new PagedList<dynamic>(result,
+            result.Count(),
+            searchParams.PageNumber,
+            searchParams.PageSize);
+        
+
+        return ResponsePaginationModel<IEnumerable<dynamic>>.Ok(result,
+            pagedList.PaginationData.CurrentPage,
+            pagedList.PaginationData.TotalPages,
+            pagedList.PaginationData.PageSize,
+            pagedList.PaginationData.TotalCount);
     }
 
 [Authorize(AuthenticationSchemes = "JwtBearer")]

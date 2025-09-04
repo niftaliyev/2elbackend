@@ -5,6 +5,8 @@ using TwoHandApp.Dto;
 using TwoHandApp.Dtos;
 using TwoHandApp.Enums;
 using TwoHandApp.Models;
+using TwoHandApp.Models.Filters;
+using TwoHandApp.Models.Pagination;
 
 namespace TwoHandApp.Controllers;
 
@@ -13,7 +15,7 @@ namespace TwoHandApp.Controllers;
 public class AdminController(AppDbContext context, UserManager<ApplicationUser> userManager) : ControllerBase
 {
     [HttpGet("pending")]
-    public async Task<IActionResult> GetPendingAds()
+    public async Task<IActionResult> GetPendingAds(SearchParams<AdFilter> searchParams,CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
 
@@ -45,9 +47,11 @@ public class AdminController(AppDbContext context, UserManager<ApplicationUser> 
                 x.FullName
             })  // потом Boosted
             .OrderBy(ad => ad.CreatedAt)                        // потом свежие
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
-        return Ok(pendingAds);
+        var result = pendingAds.ApplySorting(searchParams.Sort.Select(x => (x.field, x.order)).ToList())
+            .Pagination(searchParams.PageNumber, searchParams.PageSize).Select(x => x);
+        return Ok(result);
     }
     [HttpPost("approve-ad")]
     public async Task<IActionResult> Approve([FromQuery] int? id)

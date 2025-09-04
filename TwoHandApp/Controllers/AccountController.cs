@@ -331,12 +331,12 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
         // возвращаем инфу
         return Ok(new
         {
-            id = user.Id,
-            fullName = user.FullName,
-            email = user.Email,
-            phoneNumber = user.PhoneNumber,
-            balance = user.Balance,
-            roles = roles.ToList()
+            Id = user.Id,
+            FullName = user.FullName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            Balance = user.Balance,
+            Roles = roles.ToList()
         });
     }
     
