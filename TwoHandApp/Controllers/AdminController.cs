@@ -14,7 +14,7 @@ namespace TwoHandApp.Controllers;
 [ApiController]
 public class AdminController(AppDbContext context, UserManager<ApplicationUser> userManager) : ControllerBase
 {
-    [HttpGet("pending")]
+    [HttpPost("pending")]
     public async Task<IActionResult> GetPendingAds(SearchParams<AdFilter> searchParams,CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
