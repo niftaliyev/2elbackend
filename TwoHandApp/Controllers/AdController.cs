@@ -69,7 +69,7 @@ public class AdController(AppDbContext context, UserManager<ApplicationUser> use
             pagedList.PaginationData.CurrentPage,
             pagedList.PaginationData.TotalPages,
             pagedList.PaginationData.PageSize,
-            pagedList.PaginationData.TotalCount);
+            approvedAds.Count());
     }
 
 [Authorize(AuthenticationSchemes = "JwtBearer")]
