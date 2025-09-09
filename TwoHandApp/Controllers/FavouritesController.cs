@@ -30,7 +30,7 @@ public class FavouritesController : ControllerBase
     }
 
     // Добавить объявление в избранное
-    [HttpPost("{ad-id}")]
+    [HttpGet("add")]
     public async Task<IActionResult> AddToFavourites(int adId)
     {
         var user = await GetCurrentUserAsync();
@@ -51,7 +51,7 @@ public class FavouritesController : ControllerBase
     }
 
     // Удалить из избранного
-    [HttpDelete("{ad-id}")]
+    [HttpDelete]
     public async Task<IActionResult> RemoveFromFavourites(int adId)
     {
         var user = await GetCurrentUserAsync();
