@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using MongoDB.Driver.Linq;
 using TwoHandApp.Dto;
 using TwoHandApp.Enums;
 using TwoHandApp.Models;
@@ -15,44 +16,75 @@ namespace TwoHandApp.Controllers;
 [ApiController]
 public class AdController(AppDbContext context, UserManager<ApplicationUser> userManager) : ControllerBase
 {
+    [HttpGet("pending/details")]
+    public async Task<dynamic> GetPendingAds(int adId)
+    {
+        var now = DateTime.UtcNow;
+
+        var ad =  context.Ads.Include(x => x.Images).Select(x => new
+        {
+            x.Id,
+            x.Title,
+            x.Description,
+            Status = ((AdStatus)x.Status).ToString(),
+            x.CreatedAt,
+            Images = x.Images.Select(x => x.Url),
+            Category = x.Category.Name,
+            x.Price,
+            x.PhoneNumber,
+            x.Email,
+            IsVip = x.VipExpiresAt != null && x.VipExpiresAt > now,
+            IsPremium = x.PremiumExpiresAt != null && x.PremiumExpiresAt > now,
+            IsBoosted = x.BoostedAt != null && x.BoostedAt > DateTime.MinValue,
+            x.BoostedAt,
+            x.IsNew,
+            x.IsDeliverable,
+            x.ViewCount,
+            x.ExpiresAt,
+            City = x.City.Name,
+            AdType = x.AdType.Name,
+            x.FullName,
+            IsStore = false
+        }).FirstOrDefault(x => x.Id == adId);
+        return Ok(ad);
+    }
     [HttpPost("approved-ads")]
     public async Task<ResponsePaginationModel<IEnumerable<dynamic>>> GetApprovedAds(SearchParams<AdFilter> searchParams,CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
 
-        var approvedAds = await context.Ads
-            .Where(ad => ad.Status == AdStatus.Active && ad.ExpiresAt > now)
-            .Include(x => x.Images)
-            .Select(x => new
-            {
-                x.Id,
-                x.Title,
-                x.Description,
-                Status = ((AdStatus)x.Status).ToString(),
-                x.CreatedAt,
-                Images = x.Images.Select(x => x.Url),
-                Category = x.Category.Name,
-                x.Price,
-                x.PhoneNumber,
-                x.Email,
-                IsVip = x.VipExpiresAt != null && x.VipExpiresAt > now,
-                IsPremium = x.PremiumExpiresAt != null && x.PremiumExpiresAt > now,
-                IsBoosted = x.BoostedAt != null && x.BoostedAt > DateTime.MinValue,
-                x.BoostedAt,
-                x.IsNew,
-                x.IsDeliverable,
-                x.ViewCount,
-                x.ExpiresAt,
-                City = x.City.Name,
-                AdType = x.AdType.Name,
-                x.FullName,
-                IsStore = false
-            })
-            .OrderByDescending(ad => ad.IsVip)                           // VIP сверху
-            .ThenByDescending(ad => ad.IsPremium)                        // потом Premium
-            .ThenByDescending(ad => ad.BoostedAt ?? DateTime.MinValue)   // потом Boosted
-            .ThenByDescending(ad => ad.CreatedAt)                        // потом свежие
-            .ToListAsync(cancellationToken);
+        var approvedAds = await EntityFrameworkQueryableExtensions.ToListAsync(context.Ads
+                .Where(ad => ad.Status == AdStatus.Active && ad.ExpiresAt > now)
+                .Include(x => x.Images)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Title,
+                    x.Description,
+                    Status = ((AdStatus)x.Status).ToString(),
+                    x.CreatedAt,
+                    Images = x.Images.Select(x => x.Url),
+                    Category = x.Category.Name,
+                    x.Price,
+                    x.PhoneNumber,
+                    x.Email,
+                    IsVip = x.VipExpiresAt != null && x.VipExpiresAt > now,
+                    IsPremium = x.PremiumExpiresAt != null && x.PremiumExpiresAt > now,
+                    IsBoosted = x.BoostedAt != null && x.BoostedAt > DateTime.MinValue,
+                    x.BoostedAt,
+                    x.IsNew,
+                    x.IsDeliverable,
+                    x.ViewCount,
+                    x.ExpiresAt,
+                    City = x.City.Name,
+                    AdType = x.AdType.Name,
+                    x.FullName,
+                    IsStore = false
+                })
+                .OrderByDescending(ad => ad.IsVip)                           // VIP сверху
+                .ThenByDescending(ad => ad.IsPremium)                        // потом Premium
+                .ThenByDescending(ad => ad.BoostedAt ?? DateTime.MinValue)   // потом Boosted
+                .ThenByDescending(ad => ad.CreatedAt), cancellationToken);
 
         var result = approvedAds.ApplySorting(searchParams.Sort.Select(x => (x.field, x.order)).ToList())
                                                     .Pagination(searchParams.PageNumber, searchParams.PageSize).Select(x => x);
@@ -79,9 +111,8 @@ public async Task<IActionResult> UpdateAd(int id, [FromForm] UpdateAdDto dto)
     if (user == null)
         return Unauthorized();
 
-    var ad = await context.Ads
-        .Include(a => a.Images)
-        .FirstOrDefaultAsync(a => a.Id == id);
+    var ad = await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(context.Ads
+            .Include(a => a.Images), a => a.Id == id);
 
     if (ad == null)
         return NotFound();
