@@ -34,23 +34,4 @@ public class LookupController : ControllerBase
             .ToListAsync();
         return Ok(cities);
     }
-    // [HttpGet("prices")]
-    // public async Task<IActionResult> GetPrices()
-    // {
-    //     var prices = await context.PackagePrices
-    //         .Select(c => new
-    //         {
-    //             c.Id,
-    //             c.Price,
-    //             c.IntervalDay,
-    //             c.Description,
-    //             c.BoostCount,
-    //             c.IntervalHours,
-    //             PackageType = ((PackageType)c.PackageType).ToString() // ✅ enum как string
-    //             
-    //         })
-    //         .ToListAsync();
-    //     return Ok(prices);
-    // }
-    
 }

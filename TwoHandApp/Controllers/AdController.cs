@@ -7,6 +7,7 @@ using TwoHandApp.Dto;
 using TwoHandApp.Dtos;
 using TwoHandApp.Enums;
 using TwoHandApp.Helpers;
+using TwoHandApp.Migrations;
 using TwoHandApp.Models;
 using TwoHandApp.Models.Filters;
 using TwoHandApp.Models.Pagination;
@@ -47,7 +48,8 @@ public class AdController(AppDbContext context, UserManager<ApplicationUser> use
                 x.ExpiresAt,
                 City = x.City.Name,
                 AdType = x.AdType.Name,
-                x.FullName
+                x.FullName,
+                IsStore = false
             })
             .OrderByDescending(ad => ad.IsVip)                           // VIP сверху
             .ThenByDescending(ad => ad.IsPremium)                        // потом Premium
@@ -182,7 +184,8 @@ public async Task<IActionResult> UpdateAd(int id, [FromForm] UpdateAdDto dto)
             FullName = dto.FullName,
             PhoneNumber = dto.PhoneNumber,
             Email = dto.Email,
-            BoostedAt = null
+            BoostedAt = null,
+            IsStore = false
         };
 
         // Сохраняем файлы

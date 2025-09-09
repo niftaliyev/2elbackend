@@ -12,6 +12,7 @@ using TwoHandApp.Enums;
 using TwoHandApp.Models;
 using TwoHandApp.Regexs;
 using TwoHandApp.Helpers;
+using TwoHandApp.Migrations;
 
 namespace TwoHandApp.Controllers;
 
@@ -144,7 +145,8 @@ public class AccountController : ControllerBase
                 x.ExpiresAt,
                 City = x.City.Name,
                 AdType = x.AdType.Name,
-                x.FullName
+                x.FullName,
+                IsStore = false
             })
             .OrderByDescending(ad => ad.IsVip)                           // VIP сверху
             .ThenByDescending(ad => ad.IsPremium)                        // потом Premium
@@ -189,7 +191,8 @@ public class AccountController : ControllerBase
                 x.ExpiresAt,
                 City = x.City.Name,
                 AdType = x.AdType.Name,
-                x.FullName
+                x.FullName,
+                IsStore = false
             })
             .OrderBy(ad => ad.CreatedAt)                        // потом свежие
             .ToListAsync();
@@ -231,7 +234,8 @@ public class AccountController : ControllerBase
                 x.ExpiresAt,
                 City = x.City.Name,
                 AdType = x.AdType.Name,
-                x.FullName
+                x.FullName,
+                IsStore = false
             })
             .OrderBy(ad => ad.CreatedAt)                        // потом свежие
             .ToListAsync();
@@ -274,7 +278,8 @@ public class AccountController : ControllerBase
                 x.ExpiresAt,
                 City = x.City.Name,
                 AdType = x.AdType.Name,
-                x.FullName
+                x.FullName,
+                IsStore = false
             })
             .OrderBy(ad => ad.CreatedAt)                        // потом свежие
             .ToListAsync();
