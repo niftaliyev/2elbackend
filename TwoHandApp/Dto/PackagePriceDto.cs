@@ -9,3 +9,10 @@ public class PackagePriceDto
     public int PackageType { get; set; }
     public string Description { get; set; }
 }
+
+public class PackageVipProDto
+{
+    public int? IntervalDay { get; set; }
+    public decimal? Price { get; set; }
+    public string Description { get; set; }
+}

@@ -83,11 +83,45 @@ public class PackagesController : ControllerBase
             .ToList();
         return Ok(packages);
     }
-    [HttpPost("prices")]
-    public async Task<IActionResult> AddPrice([FromBody] PackagePriceDto packagePriceDto)
+
+    [HttpDelete]
+    public async Task<IActionResult> DeletePackage(Guid id)
+    {
+        var price = await context.PackagePrices.FindAsync(id);
+        context.PackagePrices.Remove(price);
+        await context.SaveChangesAsync();
+        return NoContent();
+    }
+    //create vip package
+    [HttpPost("vip")]
+    public async Task<IActionResult> AddVip([FromBody] PackageVipProDto vipDto)
     {
         var packagePrice = new PackagePrice();
-        packagePrice.PackageType = (PackageType)packagePriceDto.PackageType;
+        packagePrice.PackageType = PackageType.Vip;
+        packagePrice.Price = vipDto.Price;
+        packagePrice.IntervalDay = vipDto.IntervalDay;
+        packagePrice.Description = vipDto.Description;
+        context.PackagePrices.Add(packagePrice);
+        await context.SaveChangesAsync();
+        return Ok();
+    }
+    [HttpPost("premium")]
+    public async Task<IActionResult> AddPremium([FromBody] PackageVipProDto vipDto)
+    {
+        var packagePrice = new PackagePrice();
+        packagePrice.PackageType = PackageType.Premium;
+        packagePrice.Price = vipDto.Price;
+        packagePrice.IntervalDay = vipDto.IntervalDay;
+        packagePrice.Description = vipDto.Description;
+        context.PackagePrices.Add(packagePrice);
+        await context.SaveChangesAsync();
+        return Ok();
+    }
+    [HttpPost("boost")]
+    public async Task<IActionResult> AddBoost([FromBody] PackagePriceDto packagePriceDto)
+    {
+        var packagePrice = new PackagePrice();
+        packagePrice.PackageType = PackageType.Boost;
         packagePrice.Price = packagePriceDto.Price;
         packagePrice.IntervalDay = packagePriceDto.IntervalDay;
         packagePrice.Description = packagePriceDto.Description;
@@ -96,13 +130,5 @@ public class PackagesController : ControllerBase
         context.PackagePrices.Add(packagePrice);
         await context.SaveChangesAsync();
         return Ok();
-    }
-    [HttpDelete]
-    public async Task<IActionResult> DeletePackage(Guid id)
-    {
-        var price = await context.PackagePrices.FindAsync(id);
-        context.PackagePrices.Remove(price);
-        await context.SaveChangesAsync();
-        return NoContent();
     }
 }
