@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TwoHandApp.Dto;
 using TwoHandApp.Dtos;
 using TwoHandApp.Enums;
 using TwoHandApp.Models;
@@ -71,6 +70,24 @@ public class AdminController(AppDbContext context, UserManager<ApplicationUser> 
         return Ok(new { message = "Ad approved successfully." });
 
     }
+    [HttpPost("reject-ad")]
+    public async Task<IActionResult> Reject([FromQuery] int? id)
+    {
+        if (id == null || id < 1)
+            return BadRequest("Invalid ad ID format.");
+
+        var ad = await context.Ads.FirstOrDefaultAsync(x => x.Id == id);
+
+        if (ad == null)
+            return NotFound("Ad not found.");
+
+        ad.Status = Enums.AdStatus.Rejected;
+
+        await context.SaveChangesAsync();
+
+        return Ok(new { message = "Ad rejected successfully." });
+
+    }
 
     [HttpGet("boosted-ads")]
     public async Task<IActionResult> BoostedAds(CancellationToken cancellationToken)
@@ -85,7 +102,21 @@ public class AdminController(AppDbContext context, UserManager<ApplicationUser> 
             .ToListAsync(cancellationToken);
         return Ok(boosts);
     }
-    [HttpPost("users/credit")]
+    
+    [HttpGet("pending-balance-increase")]
+    public async Task<IActionResult> GetPendingBalanceIncrease()
+    {
+        var pendingUsers = context.IncreaseBalances.Select(x => new IncreaseBalanceResponseDto
+        {
+            amount = x.Amount,
+            userId = x.UserId,
+            image = x.Image,
+            userName = x.Name
+        });
+        return Ok(pendingUsers);
+    }
+
+    [HttpPost("increase-balance")]
     public async Task<IActionResult> CreditUser([FromBody] CreditUserDto dto)
     {
         if (dto.Amount <= 0) return BadRequest("Amount must be positive.");
@@ -100,11 +131,7 @@ public class AdminController(AppDbContext context, UserManager<ApplicationUser> 
             user.Balance += dto.Amount;
             context.Users.Update(user);
             await context.SaveChangesAsync();
-
-            // лог операции (опционально)
-            // _context.BalanceLogs.Add(new BalanceLog { ... });
-            // await _context.SaveChangesAsync();
-
+            
             await tx.CommitAsync();
             return Ok(new { message = "Balance credited", balance = user.Balance });
         }

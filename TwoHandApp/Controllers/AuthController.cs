@@ -6,12 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using TwoHandApp.Dto;
-using TwoHandApp.Dtos;
-using TwoHandApp.Enums;
 using TwoHandApp.Models;
 using TwoHandApp.Regexs;
-using TwoHandApp.Helpers;
 
 namespace TwoHandApp.Controllers;
 
@@ -214,7 +210,6 @@ public async Task<IActionResult> Refresh()
     });
 }
 
-
     [HttpPost("login")]
 public async Task<IActionResult> Login([FromBody] LoginModel model)
 {
@@ -299,9 +294,6 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
         Expires = DateTimeOffset.UtcNow.AddDays(7),
         Path = "/"
     });
-    // var claimValues = claims
-    //     .GroupBy(c => c.Type)
-    //     .ToDictionary(g => g.Key, g => g.Select(c => c.Value).ToList());
 
     return Ok(new
     {
@@ -310,7 +302,6 @@ public async Task<IActionResult> Login([FromBody] LoginModel model)
     });
     
 }
-
     [Authorize]
     [HttpGet("me")]
     public async Task<IActionResult> Me()

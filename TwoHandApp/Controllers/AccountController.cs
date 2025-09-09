@@ -2,17 +2,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
-using TwoHandApp.Dto;
 using TwoHandApp.Dtos;
 using TwoHandApp.Enums;
 using TwoHandApp.Models;
-using TwoHandApp.Regexs;
-using TwoHandApp.Helpers;
-using TwoHandApp.Migrations;
 
 namespace TwoHandApp.Controllers;
 
@@ -37,8 +30,6 @@ public class AccountController : ControllerBase
         _context = context;
     }
 
-   
-    
     [Authorize]
     [HttpPost("{id}/buy-service")]
     public async Task<IActionResult> BuyService(int? id, [FromBody] PurchaseServiceDto dto)
@@ -89,7 +80,6 @@ public class AccountController : ControllerBase
                     userAdPackage.Type = PackageType.Boost;
                     userAdPackage.EndDate = DateTime.UtcNow.AddHours(packagePrice.IntervalHours ?? 1);
                     
-                    
                     ad.BoostedAt = DateTime.UtcNow;
                     _context.Ads.Update(ad);
                     _context.Users.Update(user);
@@ -97,8 +87,6 @@ public class AccountController : ControllerBase
                     await _context.SaveChangesAsync();
                     await tx.CommitAsync();
                     break;
-                
-    
             }
         }
         catch (Exception e)
@@ -106,8 +94,6 @@ public class AccountController : ControllerBase
             await tx.RollbackAsync();
             throw e;
         }
-        
-       
         return Ok();
     }
     [Authorize]

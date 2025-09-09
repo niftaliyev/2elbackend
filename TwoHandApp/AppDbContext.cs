@@ -109,4 +109,6 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, 
     public DbSet<FavouriteAd> FavouriteAds { get; set; } = default!;
     public DbSet<PackagePrice> PackagePrices { get; set; }
     public DbSet<UserAdPackage> UserAdPackages { get; set; }
+    public DbSet<IncreaseBalance> IncreaseBalances { get; set; }
+    
 }

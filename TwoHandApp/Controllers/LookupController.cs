@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TwoHandApp.Dto;
-using TwoHandApp.Enums;
-using TwoHandApp.Models;
 
 namespace TwoHandApp.Controllers;
 
